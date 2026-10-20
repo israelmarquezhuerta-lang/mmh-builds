@@ -10,6 +10,7 @@ const {
   SYSTEM_INSTRUCTION
 } = chatConfig;
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
+const passwordHashIterations = 100_000;
 const maxBodyBytes = 64 * 1024;
 const rateCleanupIntervalMs = 10 * 60 * 1000;
 const authRateWindowMs = 10 * 60 * 1000;
@@ -53,7 +54,7 @@ async function passwordHash(password, salt) {
     ["deriveBits"]
   );
   const derived = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", hash: "SHA-256", salt: bytesFromHex(salt), iterations: 120000 },
+    { name: "PBKDF2", hash: "SHA-256", salt: bytesFromHex(salt), iterations: passwordHashIterations },
     key,
     256
   );
