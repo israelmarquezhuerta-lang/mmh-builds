@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.mmhbuilds.app",
+        "sha256_cert_fingerprints": ["10:D7:82:92:08:5A:B0:E9:CF:19:E2:F4:EE:24:9E:5C:77:C3:8E:67:F5:DB:40:39:B4:68:1B:95:8C:31:3C:72"]
+      }
+    }]
