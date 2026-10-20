@@ -1,8 +1,9 @@
-const CACHE_NAME = "mmh-builds-shell-v33";
+const CACHE_NAME = "mmh-builds-shell-v34";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./loyalty.js",
+  "./catalog.js",
   "./manifest.webmanifest",
   "./assets/mmh-builds-icon-180.png",
   "./assets/mmh-builds-icon-192.png",
