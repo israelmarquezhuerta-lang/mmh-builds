@@ -24,7 +24,7 @@ La carpeta del proyecto no incluye los datos de `data/mmh-local.sqlite` en la pu
 ## 3. Crear el sitio en Cloudflare Pages
 
 1. En Cloudflare abre **Workers & Pages → Create → Pages → Connect to Git** e importa el repositorio.
-2. Deja el comando de build vacío y el directorio de salida como `.`. No selecciones un framework.
+2. No selecciones un framework, usa `exit 0` como comando de build y deja el directorio de salida como `.`. Cloudflare recomienda `exit 0` para que Pages compile las funciones del servidor.
 3. En la configuración del proyecto, agrega el secreto `GEMINI_API_KEY` con tu clave de Google AI Studio. No uses una variable pública `VITE_` o `NEXT_PUBLIC_`.
 4. Despliega y abre la URL HTTPS `*.pages.dev`.
 

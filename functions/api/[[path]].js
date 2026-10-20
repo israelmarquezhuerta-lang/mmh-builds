@@ -1,5 +1,5 @@
-import "../../chat-config.js";
-import "../../loyalty.js";
+import chatConfig from "../../chat-config.js";
+import loyalty from "../../loyalty.js";
 
 const {
   MODEL,
@@ -8,7 +8,7 @@ const {
   RATE_WINDOW_MS,
   RATE_LIMIT,
   SYSTEM_INSTRUCTION
-} = globalThis.MmhChatConfig;
+} = chatConfig;
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
 const maxBodyBytes = 64 * 1024;
 const rateCleanupIntervalMs = 10 * 60 * 1000;
@@ -228,7 +228,7 @@ async function getCustomerLoyalty(db, email) {
   const result = await db.prepare("SELECT subtotal, total, payment_status FROM orders WHERE email = ? AND payment_status = ?")
     .bind(email, "Pago verificado")
     .all();
-  return globalThis.MmhLoyalty.calculateLoyalty(result.results || []);
+  return loyalty.calculateLoyalty(result.results || []);
 }
 
 async function createOrder(db, email, input) {
