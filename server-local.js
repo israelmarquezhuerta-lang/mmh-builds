@@ -2,6 +2,7 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const localStore = require("./local-store");
+const payments = require("./payments");
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 4173);
@@ -52,6 +53,78 @@ async function readJsonBody(req) {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
     throw Object.assign(new Error("El cuerpo de la solicitud no es JSON válido."), { status: 400 });
+  }
+}
+
+async function readRawBody(req) {
+  const chunks = [];
+  let length = 0;
+  for await (const chunk of req) {
+    length += chunk.length;
+    if (length > MAX_BODY_BYTES * 4) throw Object.assign(new Error("El mensaje es demasiado grande."), { status: 413 });
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function requireStripe() {
+  if (!payments.isConfigured(process.env)) {
+    throw Object.assign(new Error("El pago con tarjeta todavía no está disponible. Escríbenos por WhatsApp con tu folio para pagar."), { status: 503 });
+  }
+}
+
+async function startOrderPayment(email, id) {
+  requireStripe();
+  const order = localStore.getOrderForCustomer(email, id);
+  if (!order) throw Object.assign(new Error("No se encontró ese pedido."), { status: 404 });
+  if (order.paymentStatus === payments.paidStatus) throw Object.assign(new Error("Este pedido ya está pagado."), { status: 409 });
+  if (order.quoteRequired || !(order.total > 0)) {
+    throw Object.assign(new Error("Este pedido incluye servicios por cotizar. MMH te confirmará el precio antes del pago."), { status: 409 });
+  }
+  const savedCustomerId = localStore.getStripeCustomerId(email);
+  const stripeCustomerId = await payments.ensureCustomer(process.env.STRIPE_SECRET_KEY, savedCustomerId, order.customer);
+  if (!savedCustomerId) localStore.setStripeCustomerId(email, stripeCustomerId);
+  const intent = await payments.createOrReusePaymentIntent(process.env.STRIPE_SECRET_KEY, { order, stripeCustomerId });
+  if (intent.status === "succeeded") {
+    localStore.markOrderPaid(order, intent);
+    throw Object.assign(new Error("Este pedido ya está pagado."), { status: 409 });
+  }
+  if (intent.id !== order.paymentIntentId) localStore.setOrderPaymentIntent(order.id, intent.id);
+  return {
+    clientSecret: intent.client_secret,
+    customerId: stripeCustomerId,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+    amount: order.total,
+    currency: payments.currency
+  };
+}
+
+async function syncOrderPayment(email, id) {
+  requireStripe();
+  const order = localStore.getOrderForCustomer(email, id);
+  if (!order) throw Object.assign(new Error("No se encontró ese pedido."), { status: 404 });
+  let status = order.paymentStatus === payments.paidStatus ? "succeeded" : "requires_payment_method";
+  if (status !== "succeeded" && order.paymentIntentId) {
+    const intent = await payments.retrievePaymentIntent(process.env.STRIPE_SECRET_KEY, order.paymentIntentId);
+    status = intent.status;
+    if (status === "succeeded" && !localStore.markOrderPaid(order, intent)) status = "mismatch";
+  }
+  const { paymentIntentId, ...updated } = localStore.getOrderForCustomer(email, id);
+  return { order: updated, status };
+}
+
+async function runStripeWebhook(req, res) {
+  try {
+    const event = await payments.verifyWebhook(await readRawBody(req), req.headers["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);
+    if (!event) return sendJson(res, 400, { error: "Firma de webhook no válida." });
+    if (event.type === "payment_intent.succeeded") {
+      const intent = event.data.object;
+      const order = localStore.getOrderById(String(intent.metadata?.order_id || ""));
+      if (!order || !localStore.markOrderPaid(order, intent)) console.error("Pago de Stripe sin pedido coincidente:", intent.id);
+    }
+    return sendJson(res, 200, { received: true });
+  } catch (error) {
+    return sendJson(res, error.status || 500, { error: "No se pudo procesar el webhook." });
   }
 }
 
@@ -186,6 +259,14 @@ async function runLocalApi(req, res, pathname) {
       const order = localStore.createOrder(customer.email, await readJsonBody(req));
       return sendJson(res, 201, { order });
     }
+    const paymentMatch = pathname.match(/^\/api\/local\/orders\/(MMH-[A-F0-9]{8})\/(payment-intent|payment-status)$/);
+    if (paymentMatch && req.method === "POST") {
+      if (!customer) return sendJson(res, 401, { error: "Inicia sesión para pagar tu pedido." });
+      const result = paymentMatch[2] === "payment-intent"
+        ? await startOrderPayment(customer.email, paymentMatch[1])
+        : await syncOrderPayment(customer.email, paymentMatch[1]);
+      return sendJson(res, 200, result);
+    }
     if (pathname.startsWith("/api/local/")) {
       return sendJson(res, 404, { error: "No se encontró esa función local." });
     }
@@ -206,7 +287,7 @@ function serveFile(req, res, pathname) {
   const pathSegments = decodedPath.replace(/\\/g, "/").split("/").filter(Boolean);
   const firstSegment = (pathSegments[0] || "").toLowerCase();
   const privateDirectories = new Set([".git", ".vercel", "api", "data"]);
-  const privateFiles = new Set(["server-local.js", "local-store.js", "confirmar-pago-local.js"]);
+  const privateFiles = new Set(["server-local.js", "local-store.js", "confirmar-pago-local.js", "payments.js"]);
   if (pathSegments.some(segment => segment.startsWith(".")) || privateDirectories.has(firstSegment) || privateFiles.has(firstSegment)) {
     return sendJson(res, 404, { error: "No se encontró ese archivo." });
   }
@@ -247,6 +328,7 @@ function serveFile(req, res, pathname) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${HOST}:${PORT}`);
   if (url.pathname === "/api/chat") return runChatHandler(req, res);
+  if (url.pathname === "/api/stripe/webhook" && req.method === "POST") return runStripeWebhook(req, res);
   if (url.pathname.startsWith("/api/local/")) return runLocalApi(req, res, url.pathname);
   if (req.method !== "GET" && req.method !== "HEAD") {
     return sendJson(res, 405, { error: "Este servidor local solo admite solicitudes de lectura." }, { Allow: "GET, HEAD" });

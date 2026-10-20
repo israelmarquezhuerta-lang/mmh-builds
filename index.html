@@ -454,6 +454,12 @@
     .access-instagram { align-self: flex-start; margin: 2px 0 0 4px; font-size: 11px; }
     .overlay { position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center; padding: 18px; background: #000a; }
     .overlay.open { display: flex; }
+    .payment-element { min-height: 140px; margin: 14px 0; }
+    .payment-message { min-height: 1.2em; margin: 8px 0; font-size: 14px; }
+    .payment-message.error { color: #ff8f8f; }
+    .payment-message.info { color: var(--muted, #c9c9c9); }
+    .payment-success { text-align: center; }
+    .payment-success .payment-check { display: grid; place-items: center; width: 64px; height: 64px; margin: 6px auto 14px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-blue)); font-size: 32px; color: #fff; }
     .dialog { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 23px; border: 1px solid var(--line); border-radius: 20px; background: #171815; box-shadow: 0 25px 90px #0009; }
     .dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
     .dialog-head h2 { font-size: 21px; }
@@ -978,8 +984,8 @@
       </section>
       <div class="cart-summary"><span>Total estimado con beneficio</span><span id="cart-total">$0</span></div>
       <p class="cart-promotion" id="cart-promotion"></p>
-      <p class="cart-note">Al continuar enviarás una solicitud de pedido, no un pago. MMH debe confirmar compatibilidad, disponibilidad, precio y plazo.</p>
-      <button class="button full" id="checkout-start">Solicitar confirmación a MMH</button>
+      <p class="cart-note">Al continuar registras tu pedido y lo pagas con tarjeta de forma segura con Stripe. Si incluye servicios, MMH te enviará la cotización antes de cobrar.</p>
+      <button class="button full" id="checkout-start">Continuar con el pedido</button>
     </div>
   </div>
 
@@ -993,11 +999,30 @@
           <div class="field"><label for="customer-phone">Teléfono</label><input id="customer-phone" name="phone" type="tel" autocomplete="tel" required placeholder="Tu número de teléfono"></div>
           <div class="field"><label for="customer-address">Dirección de entrega</label><input id="customer-address" name="address" autocomplete="street-address" required placeholder="Calle, número, ciudad"></div>
         </div>
-        <p class="cart-note">Esta solicitud no procesa pagos. MMH confirmará manualmente productos, disponibilidad y precio antes de acordar el pago.</p>
+        <p class="cart-note">En el siguiente paso pagas con tarjeta de crédito o débito en un formulario seguro de Stripe; MMH nunca ve los datos de tu tarjeta. Los servicios se cotizan antes de cualquier cobro.</p>
         <div class="cart-summary"><span>Total estimado con beneficio</span><span id="checkout-total">$0</span></div>
         <p class="cart-promotion" id="checkout-promotion"></p>
-        <button class="button full" type="submit">Enviar solicitud de pedido</button>
+        <button class="button full" type="submit">Registrar pedido y continuar</button>
       </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="payment-overlay" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+    <div class="dialog">
+      <div class="dialog-head"><h2 id="payment-title">Pagar pedido</h2><button class="close-btn" id="payment-close" aria-label="Cerrar">×</button></div>
+      <form id="payment-form">
+        <p class="cart-note" id="payment-summary"></p>
+        <div class="payment-element" id="payment-element"></div>
+        <p class="payment-message" id="payment-message" role="alert" aria-live="assertive"></p>
+        <button class="button full" type="submit" id="payment-submit" disabled>Cargando formulario seguro…</button>
+        <p class="cart-note">Pago procesado por Stripe. Tu banco puede pedirte una verificación adicional (3D Secure).</p>
+      </form>
+      <div class="payment-success" id="payment-success" hidden>
+        <div class="payment-check" aria-hidden="true">✓</div>
+        <h3>¡Pago recibido!</h3>
+        <p class="cart-note" id="payment-success-text"></p>
+        <button class="button full" type="button" id="payment-view-order">Ver mi pedido</button>
+      </div>
     </div>
   </div>
 
@@ -1528,6 +1553,17 @@
       useCustomerCart(customer);
       enterPortal();
       notify("Tu sesión está lista");
+      const returnParams = new URLSearchParams(location.search);
+      const returnedOrder = orders.find(order => order.id === returnParams.get("pago"));
+      if (returnParams.has("pago")) history.replaceState(null, "", location.pathname + location.hash);
+      if (returnedOrder) {
+        selectedOrder = returnedOrder;
+        Object.assign(paymentState, { order: returnedOrder, busy: false, paid: false });
+        showOverlay("payment-overlay");
+        document.getElementById("payment-summary").textContent = `Folio ${returnedOrder.id}`;
+        setPaymentButton("Confirmando pago…", false);
+        await finishPayment(returnedOrder);
+      }
     }
 
     function appendAssistantMessage(text, fromCustomer = false) {
@@ -2887,7 +2923,9 @@
     });
     document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => hideOverlay(button.dataset.close)));
     document.querySelectorAll(".overlay").forEach(overlay => overlay.addEventListener("click", event => {
-      if (event.target === overlay) hideOverlay(overlay.id);
+      if (event.target !== overlay) return;
+      if (overlay.id === "payment-overlay") closePayment();
+      else hideOverlay(overlay.id);
     }));
     document.getElementById("checkout-start").addEventListener("click", () => {
       if (!cart.size) return;
@@ -2938,10 +2976,191 @@
         : `Solicitud ${latestOrder.id} guardada · Subtotal referencial ${peso(latestOrder.subtotal)}${latestOrder.discountRate ? ` · beneficio estimado ${latestOrder.discountRate}% (-${peso(latestOrder.discountAmount)}) · total estimado ${peso(latestOrder.total)}` : ""} · Aún falta enviarla y recibir la confirmación manual de MMH.`;
       renderOrderSteps();
       setAccountModule("messages");
-      if (quoteRequired) showPendingOrder(latestOrder);
-      else showPaymentStep(latestOrder);
-      showOverlay("order-overlay");
       formElement.reset();
+      if (quoteRequired) {
+        showPendingOrder(latestOrder);
+        showOverlay("order-overlay");
+      } else {
+        openPayment(latestOrder);
+      }
+    });
+
+    let stripeLoader = null;
+    const paymentState = { order: null, stripe: null, elements: null, busy: false, paid: false };
+    const paymentNetworkMessage = "No hay conexión con el sistema de pagos. Revisa tu internet e inténtalo de nuevo.";
+
+    function loadStripe() {
+      if (window.Stripe) return Promise.resolve(window.Stripe);
+      if (!stripeLoader) {
+        stripeLoader = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://js.stripe.com/v3/";
+          script.onload = () => resolve(window.Stripe);
+          script.onerror = () => {
+            stripeLoader = null;
+            reject(new Error(paymentNetworkMessage));
+          };
+          document.head.append(script);
+        });
+      }
+      return stripeLoader;
+    }
+
+    async function paymentApi(order, action) {
+      try {
+        return await localApi(`/api/local/orders/${encodeURIComponent(order.id)}/${action}`, { method: "POST" });
+      } catch (error) {
+        throw error instanceof TypeError ? new Error(paymentNetworkMessage) : error;
+      }
+    }
+
+    function paymentErrorMessage(error) {
+      const declined = "Tu banco rechazó la tarjeta. Prueba con otra tarjeta o comunícate con tu banco.";
+      const messages = {
+        insufficient_funds: "La tarjeta no tiene fondos suficientes. Prueba con otra tarjeta.",
+        lost_card: declined,
+        stolen_card: declined,
+        generic_decline: declined,
+        card_declined: declined,
+        expired_card: "La tarjeta está vencida. Revisa la fecha o usa otra tarjeta.",
+        incorrect_cvc: "El código de seguridad (CVC) es incorrecto.",
+        incorrect_number: "El número de tarjeta es incorrecto.",
+        card_velocity_exceeded: "La tarjeta superó su límite. Prueba con otra o llama a tu banco.",
+        processing_error: "Hubo un error al procesar la tarjeta. Intenta de nuevo en unos minutos.",
+        payment_intent_authentication_failure: "No se completó la verificación de tu banco (3D Secure). Intenta de nuevo o usa otra tarjeta."
+      };
+      if (error?.type === "api_connection_error") return paymentNetworkMessage;
+      if (error?.type === "validation_error") return error.message;
+      return messages[error?.decline_code] || messages[error?.code] || (error?.type === "card_error" ? error.message || declined : "No se pudo completar el pago. Intenta de nuevo en unos minutos.");
+    }
+
+    function setPaymentMessage(text, kind = "error") {
+      const message = document.getElementById("payment-message");
+      message.textContent = text;
+      message.className = `payment-message ${kind}`;
+    }
+
+    function setPaymentButton(label, enabled) {
+      const button = document.getElementById("payment-submit");
+      button.textContent = label;
+      button.disabled = !enabled;
+    }
+
+    async function openPayment(order) {
+      Object.assign(paymentState, { order, stripe: null, elements: null, busy: false, paid: false });
+      document.getElementById("payment-form").hidden = false;
+      document.getElementById("payment-success").hidden = true;
+      document.getElementById("payment-summary").textContent = `Folio ${order.id} · Total a pagar ${peso(order.total)} MXN`;
+      document.getElementById("payment-element").replaceChildren();
+      setPaymentMessage("");
+      setPaymentButton("Cargando formulario seguro…", false);
+      showOverlay("payment-overlay");
+      try {
+        const [StripeConstructor, intent] = await Promise.all([loadStripe(), paymentApi(order, "payment-intent")]);
+        if (paymentState.order !== order) return;
+        paymentState.stripe = StripeConstructor(intent.publishableKey, { locale: "es-419" });
+        paymentState.elements = paymentState.stripe.elements({
+          clientSecret: intent.clientSecret,
+          appearance: { theme: "night", variables: { colorPrimary: "#ff65c9", borderRadius: "12px" } }
+        });
+        const paymentElement = paymentState.elements.create("payment", { layout: "tabs" });
+        paymentElement.on("ready", () => setPaymentButton(`Pagar ${peso(intent.amount)}`, true));
+        paymentElement.on("loaderror", () => setPaymentMessage(paymentNetworkMessage));
+        paymentElement.mount("#payment-element");
+      } catch (error) {
+        if (paymentState.order !== order) return;
+        if (/ya está pagado/.test(error.message)) {
+          await finishPayment(order);
+          return;
+        }
+        setPaymentMessage(error.message);
+        setPaymentButton("Reintentar", true);
+      }
+    }
+
+    function closePayment() {
+      if (paymentState.busy) return;
+      hideOverlay("payment-overlay");
+      if (paymentState.order && !paymentState.paid) {
+        notify("Pago cancelado. Tu pedido quedó guardado y puedes pagarlo desde Mis pedidos.");
+      }
+      paymentState.order = null;
+    }
+
+    function applyUpdatedOrder(updated) {
+      const index = orders.findIndex(item => item.id === updated.id);
+      if (index >= 0) orders[index] = updated;
+      if (latestOrder?.id === updated.id) latestOrder = updated;
+      if (selectedOrder?.id === updated.id) selectedOrder = updated;
+      renderAccount();
+      renderOrderSteps();
+    }
+
+    async function finishPayment(order) {
+      let result = null;
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        try {
+          result = await paymentApi(order, "payment-status");
+        } catch {
+          result = null;
+        }
+        if (result?.status === "succeeded") break;
+        await new Promise(resolve => window.setTimeout(resolve, 1500));
+      }
+      if (result?.order) applyUpdatedOrder(result.order);
+      paymentState.paid = result?.status === "succeeded";
+      document.getElementById("payment-form").hidden = true;
+      document.getElementById("payment-success").hidden = false;
+      document.getElementById("payment-success-text").textContent = paymentState.paid
+        ? `Folio ${order.id} · ${peso(order.total)} MXN. Stripe te enviará el recibo a ${order.customer.email}. MMH ya puede preparar tu pedido.`
+        : `Folio ${order.id}. Tu banco sigue procesando el pago; te avisaremos cuando se confirme. No vuelvas a pagar este pedido.`;
+      paymentState.paid = true;
+      console.info("[MMH] Pago completado", order.id);
+    }
+
+    document.getElementById("payment-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const order = paymentState.order;
+      if (!order || paymentState.busy) return;
+      if (!paymentState.elements) {
+        openPayment(order);
+        return;
+      }
+      paymentState.busy = true;
+      setPaymentMessage("");
+      setPaymentButton("Procesando pago…", false);
+      let outcome;
+      try {
+        outcome = await paymentState.stripe.confirmPayment({
+          elements: paymentState.elements,
+          redirect: "if_required",
+          confirmParams: { return_url: `${location.origin}${location.pathname}?pago=${encodeURIComponent(order.id)}` }
+        });
+      } catch {
+        outcome = { error: { type: "api_connection_error" } };
+      }
+      paymentState.busy = false;
+      if (outcome.error) {
+        setPaymentMessage(paymentErrorMessage(outcome.error));
+        setPaymentButton(`Pagar ${peso(order.total)}`, true);
+        return;
+      }
+      setPaymentButton("Confirmando pago…", false);
+      await finishPayment(order);
+    });
+    document.getElementById("payment-close").addEventListener("click", closePayment);
+    document.getElementById("payment-view-order").addEventListener("click", () => {
+      hideOverlay("payment-overlay");
+      paymentState.order = null;
+      selectedOrder = latestOrder;
+      setAccountModule("orders");
+      renderOrderSteps();
+      const section = document.getElementById("seguimiento");
+      section.hidden = false;
+      section.scrollIntoView({ behavior: "smooth" });
+    });
+    document.getElementById("order-content").addEventListener("click", event => {
+      if (event.target.closest("[data-pay-order]") && selectedOrder) openPayment(selectedOrder);
     });
     document.getElementById("view-order").addEventListener("click", () => {
       hideOverlay("order-overlay");
@@ -2993,7 +3212,8 @@
       document.getElementById("order-content").innerHTML = `
         <div class="dialog" style="width:100%;max-width:none;margin-bottom:30px">
           <div class="dialog-head"><div><span class="eyebrow">${selectedOrder.id}</span><h2 style="margin-top:7px">${selectedOrder.quoteRequired ? `Productos: ${peso(selectedOrder.total)}` : peso(selectedOrder.total)}</h2></div><span class="delivery-days">Plazo por confirmar con MMH</span></div>
-          <p class="cart-note">Estado de la solicitud: ${selectedOrder.paymentStatus} · Pago: por acordar después de la confirmación de MMH.</p>
+          <p class="cart-note">Estado: ${selectedOrder.paymentStatus} · Pago: ${selectedOrder.quoteRequired ? "después de que MMH confirme la cotización" : selectedOrder.paymentStatus === "Pago verificado" ? "con tarjeta (Stripe)" : "pendiente"}.</p>
+          ${!selectedOrder.quoteRequired && selectedOrder.paymentStatus !== "Pago verificado" ? `<button class="button full" type="button" data-pay-order>Pagar con tarjeta ${peso(selectedOrder.total)}</button>` : ""}
           ${selectedOrder.discountRate ? `<p class="cart-note">Beneficio estimado: ${selectedOrder.discountRate}% (-${peso(selectedOrder.discountAmount)}) · Subtotal de productos ${peso(selectedOrder.subtotal)} · ${peso(selectedOrder.total)} estimados con beneficio.</p>` : ""}
           <p class="cart-note">${selectedOrder.items.map(item => `${item.quantity} × ${item.product.name}${item.product.priceOnQuote ? " · cotización pendiente" : ""}`).join("<br>")}</p>
           <div aria-label="Progreso del pedido ${progress} por ciento" style="height:4px;margin:16px 0 20px;border-radius:9px;background:#30312d"><div style="width:${progress}%;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent-blue));transition:width .5s"></div></div>
