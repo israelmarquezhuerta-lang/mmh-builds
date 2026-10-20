@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240" role="img" aria-label="Ilustración de fuente de poder para PC">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#202b30"/><stop offset="1" stop-color="#101414"/></linearGradient>
+    <linearGradient id="body" x2="1" y2="1"><stop stop-color="#303b3d"/><stop offset="1" stop-color="#151c1e"/></linearGradient>
+    <linearGradient id="edge"><stop stop-color="#6be7ff"/><stop offset="1" stop-color="#b8fa68"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="480" height="240" rx="20" fill="url(#bg)"/>
+  <ellipse cx="240" cy="129" rx="156" ry="66" fill="#6be7ff" opacity=".12" filter="url(#glow)"/>
+  <g transform="rotate(-5 240 120)">
+    <path d="m108 66 23-22h218l24 23v105l-25 24H132l-24-23z" fill="url(#body)" stroke="url(#edge)" stroke-width="3"/>
+    <path d="M132 61h194l17 16v85l-18 17H132l-11-17V78z" fill="#111719" stroke="#6be7ff" stroke-opacity=".45" stroke-width="2"/>
+    <circle cx="204" cy="119" r="44" fill="#101516" stroke="#6be7ff" stroke-width="3"/>
+    <circle cx="204" cy="119" r="34" fill="#1b282b" stroke="#b8fa68" stroke-opacity=".75" stroke-width="2"/>
+    <circle cx="204" cy="119" r="7" fill="#6be7ff"/>
+    <path d="M204 86c15 2 19 13 7 24m27 9c-2 15-13 19-24 7m-10 27c-15-2-19-13-7-24m-27-10c2-15 13-19 24-7m10-26c-15 2-19 13-7 24" stroke="#b8fa68" stroke-opacity=".75" stroke-width="5" stroke-linecap="round"/>
+    <rect x="270" y="95" width="31" height="46" rx="5" fill="#101516" stroke="#6be7ff" stroke-opacity=".65"/>
+    <path d="M277 103h17m-17 9h17m-17 9h17m-17 9h17M157 178h129" stroke="#6be7ff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
+    <path d="M357 82h28m-28 15h28m-28 15h28m-28 15h28m-28 15h28" stroke="#b8fa68" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <path d="M25 30h75M380 210h75" stroke="#6be7ff" stroke-opacity=".4" stroke-width="2"/>
+</svg>

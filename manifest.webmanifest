@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "MMH Builds",
+  "short_name": "MMH Builds",
+  "description": "PCs a tu medida, apps y páginas web para tu negocio.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0818",
+  "theme_color": "#0b0818",
+  "categories": ["shopping", "productivity", "games"],
+  "icons": [
+    {
+      "src": "./assets/mmh-builds-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/mmh-builds-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

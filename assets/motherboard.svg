@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240" role="img" aria-label="Ilustración de tarjeta madre gaming">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#202b30"/><stop offset="1" stop-color="#101414"/></linearGradient>
+    <linearGradient id="board" x2="1" y2="1"><stop stop-color="#283638"/><stop offset="1" stop-color="#12191b"/></linearGradient>
+    <linearGradient id="edge"><stop stop-color="#6be7ff"/><stop offset="1" stop-color="#b8fa68"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="480" height="240" rx="20" fill="url(#bg)"/>
+  <ellipse cx="240" cy="120" rx="150" ry="95" fill="#6be7ff" opacity=".1" filter="url(#glow)"/>
+  <g transform="rotate(-4 240 120)">
+    <rect x="107" y="19" width="266" height="202" rx="16" fill="url(#board)" stroke="url(#edge)" stroke-width="3"/>
+    <rect x="126" y="36" width="95" height="95" rx="8" fill="#111719" stroke="#6be7ff" stroke-opacity=".8" stroke-width="2"/>
+    <rect x="144" y="54" width="59" height="59" rx="5" fill="#1c292c" stroke="#b8fa68" stroke-opacity=".7"/>
+    <path d="M173 62v43m-22-21h44" stroke="#6be7ff" stroke-width="3"/>
+    <rect x="239" y="36" width="27" height="139" rx="5" fill="#111719" stroke="#6be7ff" stroke-opacity=".7"/>
+    <rect x="276" y="36" width="27" height="139" rx="5" fill="#111719" stroke="#b8fa68" stroke-opacity=".65"/>
+    <rect x="313" y="36" width="27" height="108" rx="5" fill="#111719" stroke="#6be7ff" stroke-opacity=".55"/>
+    <path d="M232 145h109m-109 14h72m-182-7h25m-25 14h19m66 36h103" stroke="#6be7ff" stroke-opacity=".65" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="324" cy="183" r="13" fill="#12191b" stroke="#b8fa68" stroke-width="2"/>
+    <circle cx="324" cy="183" r="5" fill="#6be7ff"/>
+    <circle cx="118" cy="31" r="3" fill="#b8fa68"/><circle cx="359" cy="31" r="3" fill="#b8fa68"/>
+  </g>
+  <path d="M25 30h75M380 210h75" stroke="#6be7ff" stroke-opacity=".4" stroke-width="2"/>
+</svg>
