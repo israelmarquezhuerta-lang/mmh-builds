@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { DatabaseSync } = require("node:sqlite");
 const { calculateLoyalty } = require("./loyalty");
+const { priceOrderItems } = require("./catalog");
 
 const dataDirectory = path.join(__dirname, "data");
 fs.mkdirSync(dataDirectory, { recursive: true });
@@ -208,7 +209,8 @@ function getCustomerLoyalty(email) {
 }
 
 function createOrder(email, input) {
-  if (!Array.isArray(input.items) || input.items.length === 0 || input.items.length > 40) {
+  const priced = priceOrderItems(input.items);
+  if (!priced) {
     throw Object.assign(new Error("El pedido no contiene artículos válidos."), { status: 400 });
   }
   const customer = {
@@ -217,23 +219,12 @@ function createOrder(email, input) {
     phone: String(input.customer?.phone || "").trim(),
     address: String(input.customer?.address || "").trim()
   };
-  const items = input.items.map(item => ({
-    product: {
-      id: String(item.product?.id || "").slice(0, 80),
-      name: String(item.product?.name || "Artículo").slice(0, 180),
-      priceOnQuote: Boolean(item.product?.priceOnQuote),
-      referencePrice: Number(item.product?.referencePrice || item.product?.price || 0)
-    },
-    quantity: Math.min(99, Math.max(1, Math.floor(Number(item.quantity) || 1)))
-  }));
-  const total = Number(input.total);
-  if (!Number.isFinite(total) || total < 0 || !customer.name || !customer.phone || !customer.address) {
+  if (!customer.name || !customer.phone || !customer.address) {
     throw Object.assign(new Error("Revisa los datos del pedido y vuelve a intentar."), { status: 400 });
   }
 
-  const quoteRequired = Boolean(input.quoteRequired);
+  const { items, subtotal, quoteRequired } = priced;
   const loyalty = getCustomerLoyalty(email);
-  const subtotal = total;
   const discountRate = loyalty.discountPercent;
   const discountAmount = Math.round(subtotal * discountRate) / 100;
   const order = {
@@ -278,13 +269,6 @@ function listOrders(email) {
   }));
 }
 
-function updateOrderStage(email, id, stage) {
-  const safeStage = Math.min(6, Math.max(0, Math.floor(Number(stage) || 0)));
-  const result = database.prepare("UPDATE orders SET stage = ? WHERE id = ? AND email = ?").run(safeStage, id, email);
-  if (!result.changes) return null;
-  return listOrders(email).find(order => order.id === id) || null;
-}
-
 function verifyOrderPayment(id) {
   const order = database.prepare("SELECT email, payment_status, quote_required FROM orders WHERE id = ?").get(id);
   if (!order) {
@@ -301,4 +285,4 @@ function verifyOrderPayment(id) {
   return listOrders(order.email).find(item => item.id === id);
 }
 
-module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, issuePasswordReset, listOrders, login, register, resetPassword, revokePasswordReset, updateOrderStage, verifyOrderPayment };
+module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, issuePasswordReset, listOrders, login, register, resetPassword, revokePasswordReset, verifyOrderPayment };

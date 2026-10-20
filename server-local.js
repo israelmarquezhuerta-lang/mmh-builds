@@ -186,18 +186,10 @@ async function runLocalApi(req, res, pathname) {
       const order = localStore.createOrder(customer.email, await readJsonBody(req));
       return sendJson(res, 201, { order });
     }
-    const orderMatch = pathname.match(/^\/api\/local\/orders\/([A-Za-z0-9-]+)$/);
-    if (orderMatch && req.method === "PATCH") {
-      if (!customer) return sendJson(res, 401, { error: "Inicia sesión para actualizar el pedido." });
-      const body = await readJsonBody(req);
-      const order = localStore.updateOrderStage(customer.email, orderMatch[1], body.stage);
-      if (!order) return sendJson(res, 404, { error: "No se encontró ese pedido." });
-      return sendJson(res, 200, { order });
-    }
     if (pathname.startsWith("/api/local/")) {
       return sendJson(res, 404, { error: "No se encontró esa función local." });
     }
-    return sendJson(res, 405, { error: "Método no permitido." }, { Allow: "GET, POST, PATCH" });
+    return sendJson(res, 405, { error: "Método no permitido." }, { Allow: "GET, POST" });
   } catch (error) {
     return sendJson(res, error.status || 500, { error: error.status ? error.message : "No se pudo completar la operación local." });
   }

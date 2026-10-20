@@ -63,4 +63,14 @@ SET payment_status = 'Pago verificado'
 WHERE id = 'MMH-FOLIO_REAL' AND quote_required = 0;
 ```
 
+Los clientes ya no pueden cambiar la etapa de su pedido. Para avanzarla (0 = recibido … 6 = entregado), usa la consola SQL de D1:
+
+```sql
+UPDATE orders
+SET stage = 1
+WHERE id = 'MMH-FOLIO_REAL';
+```
+
+El servidor recalcula el subtotal de cada pedido con el catálogo de [`catalog.js`](./catalog.js) e ignora precios o totales enviados por el navegador. Si cambias un precio, cámbialo en `catalog.js`.
+
 La aplicación no procesa pagos. La disponibilidad y el precio final deben ser confirmados por MMH; los importes del catálogo son referencias. Protege los datos de contacto y cumple las obligaciones de privacidad aplicables antes de promocionar el sitio.

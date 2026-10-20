@@ -1,5 +1,6 @@
 import chatConfig from "../../chat-config.js";
 import loyalty from "../../loyalty.js";
+import catalog from "../../catalog.js";
 
 const {
   MODEL,
@@ -311,33 +312,20 @@ async function getCustomerLoyalty(db, email) {
 }
 
 async function createOrder(db, email, input) {
-  if (!Array.isArray(input.items) || input.items.length === 0 || input.items.length > 40) {
-    throw apiError("El pedido no contiene artículos válidos.", 400);
-  }
+  const priced = catalog.priceOrderItems(input.items);
+  if (!priced) throw apiError("El pedido no contiene artículos válidos.", 400);
   const customer = {
     name: String(input.customer?.name || "").trim().slice(0, 100),
     email,
     phone: String(input.customer?.phone || "").trim().slice(0, 30),
     address: String(input.customer?.address || "").trim().slice(0, 300)
   };
-  const items = input.items.map(item => ({
-    product: {
-      id: String(item.product?.id || "").slice(0, 80),
-      name: String(item.product?.name || "Artículo").slice(0, 180),
-      priceOnQuote: Boolean(item.product?.priceOnQuote),
-      referencePrice: Number(item.product?.referencePrice || item.product?.price || 0)
-    },
-    quantity: Math.min(99, Math.max(1, Math.floor(Number(item.quantity) || 1)))
-  }));
-  const total = Number(input.total);
-  if (!Number.isFinite(total) || total < 0 || !customer.name || !customer.phone || !customer.address ||
-    items.some(item => !Number.isFinite(item.product.referencePrice) || item.product.referencePrice < 0)) {
+  if (!customer.name || !customer.phone || !customer.address) {
     throw apiError("Revisa los datos del pedido y vuelve a intentar.", 400);
   }
 
-  const quoteRequired = Boolean(input.quoteRequired);
+  const { items, subtotal, quoteRequired } = priced;
   const loyalty = await getCustomerLoyalty(db, email);
-  const subtotal = total;
   const discountRate = loyalty.discountPercent;
   const discountAmount = Math.round(subtotal * discountRate) / 100;
   const order = {
@@ -366,15 +354,6 @@ async function createOrder(db, email, input) {
       JSON.stringify(order.customer), JSON.stringify(order.items), order.createdAt, order.stage)
     .run();
   return order;
-}
-
-async function updateOrderStage(db, email, id, stage) {
-  const safeStage = Math.min(6, Math.max(0, Math.floor(Number(stage) || 0)));
-  const result = await db.prepare("UPDATE orders SET stage = ? WHERE id = ? AND email = ?")
-    .bind(safeStage, id, email)
-    .run();
-  if (!result.meta.changes) return null;
-  return (await listOrders(db, email)).find(order => order.id === id) || null;
 }
 
 async function handleLocal(request, env, pathname) {
@@ -429,13 +408,6 @@ async function handleLocal(request, env, pathname) {
   if (pathname === "/api/local/orders" && request.method === "POST") {
     if (!customer) return json(401, { error: "Inicia sesión para registrar un pedido." });
     return json(201, { order: await createOrder(db, customer.email, await readJson(request)) });
-  }
-  const orderMatch = pathname.match(/^\/api\/local\/orders\/([A-Za-z0-9-]+)$/);
-  if (orderMatch && request.method === "PATCH") {
-    if (!customer) return json(401, { error: "Inicia sesión para actualizar el pedido." });
-    const order = await updateOrderStage(db, customer.email, orderMatch[1], (await readJson(request)).stage);
-    if (!order) return json(404, { error: "No se encontró ese pedido." });
-    return json(200, { order });
   }
   if (pathname.startsWith("/api/local/")) {
     return json(404, { error: "No se encontró esa función local." });
