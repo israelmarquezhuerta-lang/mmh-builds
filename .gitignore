@@ -3,3 +3,12 @@
 !.env.example
 .vercel
 data/
+.dev.vars
+.wrangler/
+node_modules/
+*.keystore
+*.jks
+*.apk
+*.aab
+*.zip
+signing-key-info.txt
