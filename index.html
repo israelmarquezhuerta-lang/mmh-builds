@@ -3004,7 +3004,7 @@
     }
 
     function formatDate(date) {
-      return new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" }).format(date);
+      return new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" }).format(new Date(date));
     }
 
     renderProducts();
