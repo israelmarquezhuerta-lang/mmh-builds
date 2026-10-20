@@ -10,6 +10,7 @@ const {
   SYSTEM_INSTRUCTION
 } = chatConfig;
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
+const passwordResetLifetimeMs = 30 * 60 * 1000;
 const passwordHashIterations = 100_000;
 const maxBodyBytes = 64 * 1024;
 const rateCleanupIntervalMs = 10 * 60 * 1000;
@@ -192,6 +193,83 @@ async function login(db, input) {
   return { customer: customerFromRow(row), token: await createSession(db, email) };
 }
 
+async function sendPasswordResetEmail(env, email, resetUrl) {
+  const response = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret: env.PASSWORD_RESET_MAIL_SECRET, email, resetUrl }),
+    signal: AbortSignal.timeout(10_000)
+  });
+  if (!response.ok) throw new Error(`Google Apps Script respondió con estado ${response.status}.`);
+  const result = await response.json();
+  if (!result?.ok) throw new Error("Google Apps Script no confirmó el envío del correo.");
+}
+
+async function requestPasswordReset(db, request, env, input) {
+  const email = normalizeEmail(input.email);
+  if (!emailPattern.test(email) || email.length > 254) {
+    throw apiError("Escribe un correo electrónico válido.", 400);
+  }
+  if (!String(env.GOOGLE_APPS_SCRIPT_URL || "").trim() || !String(env.PASSWORD_RESET_MAIL_SECRET || "").trim()) {
+    throw apiError("El envío de correos de recuperación todavía no está configurado. Contacta a MMH para recuperar tu cuenta.", 503);
+  }
+
+  const customer = await db.prepare("SELECT email FROM customers WHERE email = ?").bind(email).first();
+  if (!customer) return { ok: true };
+
+  const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+  const now = Date.now();
+  await db.batch([
+    db.prepare("DELETE FROM password_reset_tokens WHERE expires_at <= ? OR email = ?").bind(now, email),
+    db.prepare("INSERT INTO password_reset_tokens (token_hash, email, expires_at, created_at) VALUES (?, ?, ?, ?)")
+      .bind(await sha256(token), email, now + passwordResetLifetimeMs, new Date(now).toISOString())
+  ]);
+
+  try {
+    const base = new URL(String(env.APP_BASE_URL || new URL(request.url).origin));
+    if (base.protocol !== "https:" && !(base.protocol === "http:" && ["localhost", "127.0.0.1"].includes(base.hostname))) {
+      throw new Error("APP_BASE_URL debe usar HTTPS.");
+    }
+    base.pathname = "/";
+    base.search = "";
+    base.hash = `reset-password=${token}`;
+    await sendPasswordResetEmail(env, email, base.toString());
+  } catch (error) {
+    console.error("No se pudo enviar el correo de recuperación de contraseña.", error.message);
+    await db.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(await sha256(token)).run();
+  }
+  return { ok: true };
+}
+
+async function completePasswordReset(db, input) {
+  const token = String(input.token || "");
+  const password = String(input.password || "");
+  if (!/^[a-f0-9]{64}$/.test(token) || password.length < 8 || password.length > 256) {
+    throw apiError("El enlace no es válido o ya venció. Solicita uno nuevo.", 400);
+  }
+  const tokenHash = await sha256(token);
+  const now = Date.now();
+  const reset = await db.prepare("SELECT email FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ?")
+    .bind(tokenHash, now)
+    .first();
+  if (!reset) throw apiError("El enlace no es válido o ya venció. Solicita uno nuevo.", 400);
+
+  const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await passwordHash(password, salt);
+  const result = await db.batch([
+    db.prepare(`UPDATE customers SET salt = ?, password_hash = ? WHERE email = ?
+      AND EXISTS (SELECT 1 FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ?)`)
+      .bind(salt, hash, reset.email, tokenHash, now),
+    db.prepare(`DELETE FROM sessions WHERE email = ? AND EXISTS (
+      SELECT 1 FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ?)`)
+      .bind(reset.email, tokenHash, now),
+    db.prepare("DELETE FROM password_reset_tokens WHERE email = ? AND token_hash = ?")
+      .bind(reset.email, tokenHash)
+  ]);
+  if (!result[0]?.meta?.changes) throw apiError("El enlace no es válido o ya venció. Solicita uno nuevo.", 400);
+  return { ok: true };
+}
+
 async function createVisitorLead(db, input) {
   const name = String(input.name || "").trim().replace(/\s+/g, " ").slice(0, 100);
   const phone = String(input.phone || "").trim().slice(0, 20);
@@ -303,6 +381,19 @@ async function handleLocal(request, env, pathname) {
   const db = getDatabase(env);
   const token = getSessionToken(request);
   const customer = await findSession(db, token);
+  if (pathname === "/api/local/password-reset/request" && request.method === "POST") {
+    if (await enforceRateLimit(db, request, "password-reset-request", 5, authRateWindowMs)) {
+      return json(429, { error: "Has solicitado varios enlaces. Espera unos minutos e inténtalo de nuevo." });
+    }
+    return json(200, await requestPasswordReset(db, request, env, await readJson(request)));
+  }
+  if (pathname === "/api/local/password-reset/complete" && request.method === "POST") {
+    if (await enforceRateLimit(db, request, "password-reset-complete", 10, authRateWindowMs)) {
+      return json(429, { error: "Has enviado varias solicitudes. Espera unos minutos e inténtalo de nuevo." });
+    }
+    await completePasswordReset(db, await readJson(request));
+    return json(200, { ok: true }, { "Set-Cookie": clearSessionCookie() });
+  }
   if (pathname === "/api/local/visitor-leads" && request.method === "POST") {
     if (await enforceRateLimit(db, request, "visitor", 15, authRateWindowMs)) {
       return json(429, { error: "Inténtalo de nuevo más tarde para registrar otra visita." });

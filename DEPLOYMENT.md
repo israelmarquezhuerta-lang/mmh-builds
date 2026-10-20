@@ -13,7 +13,9 @@ La carpeta del proyecto no incluye los datos de `data/mmh-local.sqlite` en la pu
 1. En Cloudflare, abre **Workers & Pages → D1 SQL Database** y crea una base llamada `mmh-builds`.
 2. Copia el identificador de base de datos que muestra Cloudflare.
 3. En `wrangler.toml`, reemplaza `REPLACE_WITH_YOUR_D1_DATABASE_ID` por ese identificador y sube el cambio a GitHub.
-4. Abre la consola SQL de la base D1 y ejecuta el contenido completo de [`migrations/0001_initial.sql`](./migrations/0001_initial.sql). Esto crea las tablas de cuentas, sesiones, pedidos, visitantes y límites del asistente.
+4. Abre la consola SQL de la base D1 y ejecuta, en orden, [`migrations/0001_initial.sql`](./migrations/0001_initial.sql) y [`migrations/0002_password_reset_tokens.sql`](./migrations/0002_password_reset_tokens.sql). La segunda migración crea la tabla para enlaces de recuperación de un solo uso.
+
+Si la base `mmh-builds` ya existe y contiene cuentas, ejecuta únicamente `migrations/0002_password_reset_tokens.sql` en su consola D1. No vuelvas a ejecutar `0001_initial.sql`; la nueva migración solo agrega la tabla de recuperación y conserva las cuentas y pedidos actuales.
 
 ## 2. Subir el proyecto a GitHub
 
@@ -21,16 +23,28 @@ La carpeta del proyecto no incluye los datos de `data/mmh-local.sqlite` en la pu
 2. Sube el contenido de esta carpeta, incluyendo `functions`, `migrations`, `assets`, `index.html`, `loyalty.js`, `chat-config.js`, `wrangler.toml` y `.assetsignore`.
 3. No subas `.env.local`, la carpeta `data`, ni contraseñas o claves. `.gitignore` excluye los datos locales y archivos `.env`.
 
-## 3. Crear el sitio en Cloudflare Pages
+## 3. Preparar el envío desde Gmail
+
+Esta opción usa tu cuenta Gmail personal, no necesita comprar un dominio. Entra a [Google Apps Script](https://script.google.com/) con la cuenta que enviará los correos y crea un proyecto.
+
+1. Copia el contenido de [`apps-script/Code.gs`](./apps-script/Code.gs) en `Code.gs` y guarda el proyecto.
+2. En **Project Settings → Script Properties**, crea `MMH_RESET_MAIL_SECRET` con una clave aleatoria larga (mínimo 32 caracteres). Guarda esa misma clave para agregarla luego como secreto de Cloudflare; no la envíes por chat.
+3. En el editor, selecciona `authorizeMailSender` y pulsa **Run**. Revisa que sea la cuenta correcta y autoriza el envío de correos.
+4. Pulsa **Deploy → New deployment → Web app**. Elige **Execute as: Me** y permite acceso a usuarios anónimos. Despliega y copia la URL que termina en `/exec`.
+
+Google Apps Script tiene una cuota diaria para cuentas personales (actualmente 100 destinatarios al día), y Google puede cambiar esos límites. Consulta la [cuota oficial](https://developers.google.com/apps-script/guides/services/quotas).
+
+## 4. Crear el sitio en Cloudflare Pages
 
 1. En Cloudflare abre **Workers & Pages → Create → Pages → Connect to Git** e importa el repositorio.
 2. No selecciones un framework, usa `exit 0` como comando de build y deja el directorio de salida como `.`. Cloudflare recomienda `exit 0` para que Pages compile las funciones del servidor.
 3. En la configuración del proyecto, agrega el secreto `GEMINI_API_KEY` con tu clave de Google AI Studio. No uses una variable pública `VITE_` o `NEXT_PUBLIC_`.
-4. Despliega y abre la URL HTTPS `*.pages.dev`.
+4. En **Settings → Variables and Secrets**, agrega `GOOGLE_APPS_SCRIPT_URL` con la URL `/exec` copiada y `PASSWORD_RESET_MAIL_SECRET` como secreto con la clave larga del paso anterior. `APP_BASE_URL` ya apunta a `https://mmh-builds.pages.dev` en `wrangler.toml`; cámbialo si publicas con otro dominio.
+5. Despliega y abre la URL HTTPS `*.pages.dev`.
 
-`wrangler.toml` enlaza la base D1 mediante el binding `DB`; `functions/api/[[path]].js` atiende el chat y las rutas de visitante, cuenta y pedidos.
+`wrangler.toml` enlaza la base D1 mediante el binding `DB`; `functions/api/[[path]].js` atiende el chat y las rutas de visitante, cuenta y pedidos. La recuperación usa un enlace temporal de 30 minutos; al cambiar la contraseña, se cierran las sesiones abiertas. Nunca se envía la contraseña actual.
 
-## 4. Prueba el sitio publicado
+## 5. Prueba el sitio publicado
 
 - `/` debe mostrar la pantalla actualizada y el acceso de visitante.
 - El acceso de visitante guarda el nombre y teléfono en D1 y muestra el rango **Cliente explorando**, sin puntos ni descuentos.

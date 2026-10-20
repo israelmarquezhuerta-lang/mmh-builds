@@ -103,10 +103,58 @@ function clearSessionCookie(res) {
   res.setHeader("Set-Cookie", "mmh_local_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0");
 }
 
+function passwordResetBaseUrl() {
+  const configured = String(process.env.APP_BASE_URL || `http://${HOST}:${PORT}`);
+  const base = new URL(configured);
+  if (base.protocol !== "https:" && !(base.protocol === "http:" && ["localhost", "127.0.0.1"].includes(base.hostname))) {
+    throw Object.assign(new Error("APP_BASE_URL debe usar HTTPS."), { status: 503 });
+  }
+  base.pathname = "/";
+  base.search = "";
+  base.hash = "";
+  return base.toString();
+}
+
+async function sendPasswordResetEmail(email, resetUrl) {
+  const scriptUrl = String(process.env.GOOGLE_APPS_SCRIPT_URL || "").trim();
+  const secret = String(process.env.PASSWORD_RESET_MAIL_SECRET || "").trim();
+  const response = await fetch(scriptUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret, email, resetUrl }),
+    signal: AbortSignal.timeout(10_000)
+  });
+  if (!response.ok) throw new Error(`Google Apps Script respondió con estado ${response.status}.`);
+  const result = await response.json();
+  if (!result?.ok) throw new Error("Google Apps Script no confirmó el envío del correo.");
+}
+
 async function runLocalApi(req, res, pathname) {
   const token = getSessionToken(req);
   const customer = localStore.findSession(token);
   try {
+    if (pathname === "/api/local/password-reset/request" && req.method === "POST") {
+      if (!String(process.env.GOOGLE_APPS_SCRIPT_URL || "").trim() || !String(process.env.PASSWORD_RESET_MAIL_SECRET || "").trim()) {
+        return sendJson(res, 503, { error: "El envío de correos de recuperación todavía no está configurado. Contacta a MMH para recuperar tu cuenta." });
+      }
+      const { email } = await readJsonBody(req);
+      const reset = localStore.issuePasswordReset(email);
+      if (reset) {
+        const resetUrl = `${passwordResetBaseUrl()}#reset-password=${reset.token}`;
+        try {
+          await sendPasswordResetEmail(reset.email, resetUrl);
+        } catch (error) {
+          localStore.revokePasswordReset(reset.token);
+          console.error("No se pudo enviar el correo local de recuperación.", error.message);
+        }
+      }
+      return sendJson(res, 200, { ok: true });
+    }
+    if (pathname === "/api/local/password-reset/complete" && req.method === "POST") {
+      localStore.resetPassword(await readJsonBody(req));
+      clearSessionCookie(res);
+      return sendJson(res, 200, { ok: true });
+    }
     if (pathname === "/api/local/visitor-leads" && req.method === "POST") {
       const lead = localStore.createVisitorLead(await readJsonBody(req));
       return sendJson(res, 201, { ok: true, id: lead.id });

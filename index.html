@@ -67,6 +67,7 @@
     .access-layout { position: relative; z-index: 1; }
     .guest-entry-section { margin-top: 18px; padding-top: 15px; border-top: 1px solid #ffffff1a; }
     .guest-entry-section .eyebrow { display: block; margin-bottom: 5px; color: var(--accent-blue); }
+    .guest-entry-section[hidden] { display: none !important; }
     .guest-entry-form { display: grid; gap: 10px; margin-top: 9px; }
     .guest-entry-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .guest-entry-section { display: block; }
@@ -480,8 +481,12 @@
     .account-form[hidden] { display: none; }
     .account-switch { margin: 15px 0 0; color: var(--muted); text-align: center; font-size: 11px; }
     .account-switch button { border: 0; padding: 0; color: var(--accent); background: none; cursor: pointer; font: inherit; }
+    .account-link { display: block; width: fit-content; margin: 10px auto 0; border: 0; padding: 0; color: #d7b6ff; background: none; cursor: pointer; font: inherit; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+    .account-link[hidden] { display: none; }
     .demo-notice { margin: 12px 0 0; padding: 11px 12px; border: 1px solid #6be7ff30; border-radius: 10px; color: #c8d9dc; background: #6be7ff09; font-size: 10px; line-height: 1.55; }
     .form-error { min-height: 15px; margin: 0; color: #ff9d9d; font-size: 11px; }
+    .form-feedback { min-height: 15px; margin: 0; color: #b9eaff; font-size: 11px; line-height: 1.5; }
+    .form-feedback:empty { display: none; }
     .account-dialog { width: min(460px, 100%); }
     .field label { display: block; margin-bottom: 6px; color: #c4c5bd; font-size: 11px; }
     .field input { width: 100%; height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: #10110f; outline: none; }
@@ -676,9 +681,24 @@
           <div class="field"><label for="login-email">Correo electrónico</label><input id="login-email" name="email" type="email" autocomplete="email" required placeholder="tu@correo.com"></div>
           <div class="field"><label for="login-password">Contraseña</label><input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="Tu contraseña"></div>
           <p class="form-error" id="login-error" role="alert"></p>
+          <p class="form-feedback" id="login-feedback" role="status" aria-live="polite"></p>
           <button class="button full" type="submit">Iniciar sesión</button>
         </form>
-        <p class="account-switch"><span id="account-switch-copy">¿Aún no tienes cuenta?</span> <button id="account-switch" type="button">Crear cuenta</button></p>
+        <button class="account-link" id="forgot-password-link" type="button">¿Olvidaste tu contraseña?</button>
+        <form class="account-form" id="password-reset-request-form" hidden>
+          <div class="field"><label for="reset-request-email">Correo de tu cuenta</label><input id="reset-request-email" name="email" type="email" autocomplete="email" required placeholder="tu@correo.com"></div>
+          <p class="form-feedback" id="reset-request-feedback" role="status" aria-live="polite">Te enviaremos un enlace de un solo uso válido durante 30 minutos.</p>
+          <p class="form-error" id="reset-request-error" role="alert"></p>
+          <button class="button full" type="submit">Enviar enlace de recuperación</button>
+          <button class="account-link" type="button" data-back-to-login>Volver a iniciar sesión</button>
+        </form>
+        <form class="account-form" id="password-reset-form" hidden>
+          <div class="field"><label for="reset-new-password">Nueva contraseña</label><input id="reset-new-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="256" required placeholder="Mínimo 8 caracteres"></div>
+          <div class="field"><label for="reset-confirm-password">Confirmar contraseña</label><input id="reset-confirm-password" name="confirm" type="password" autocomplete="new-password" minlength="8" maxlength="256" required placeholder="Repite la nueva contraseña"></div>
+          <p class="form-error" id="reset-password-error" role="alert"></p>
+          <button class="button full" type="submit">Guardar nueva contraseña</button>
+        </form>
+        <p class="account-switch" id="account-switch-row"><span id="account-switch-copy">¿Aún no tienes cuenta?</span> <button id="account-switch" type="button">Crear cuenta</button></p>
         <section class="guest-entry-section" id="guest-entry-section" aria-labelledby="guest-entry-title">
           <span class="eyebrow" id="guest-entry-title">Acceso de visitante</span>
           <p class="guest-entry-note">Ingresa únicamente tu nombre y un número real donde podamos localizarte: celular, casa u oficina.</p>
@@ -1044,6 +1064,7 @@
     let latestOrder = null;
     let selectedOrder = null;
     let currentCustomer = null;
+    let pendingPasswordResetToken = "";
     let assistantMode = "start";
     let assistantQuoteDetails = "";
     let assistantPlan = null;
@@ -1914,6 +1935,11 @@
       const loginForm = document.getElementById("login-form");
       registerForm.hidden = showLogin;
       loginForm.hidden = !showLogin;
+      document.getElementById("password-reset-request-form").hidden = true;
+      document.getElementById("password-reset-form").hidden = true;
+      document.getElementById("forgot-password-link").hidden = !showLogin;
+      document.getElementById("account-switch-row").hidden = false;
+      document.getElementById("guest-entry-section").hidden = false;
       document.getElementById("access-title").textContent = showLogin ? "Inicia sesión" : "Crea tu cuenta";
       document.getElementById("access-intro").textContent = showLogin
         ? "Entra a tu espacio para explorar productos, pedir servicios y consultar tus pedidos."
@@ -1922,6 +1948,56 @@
       document.getElementById("account-switch").textContent = showLogin ? "Crear cuenta" : "Iniciar sesión";
       document.getElementById("register-error").textContent = "";
       document.getElementById("login-error").textContent = "";
+      document.getElementById("login-feedback").textContent = "";
+      document.getElementById("reset-request-error").textContent = "";
+      document.getElementById("reset-request-feedback").textContent = "Te enviaremos un enlace de un solo uso válido durante 30 minutos.";
+      document.getElementById("reset-password-error").textContent = "";
+      pendingPasswordResetToken = "";
+    }
+
+    function showPasswordResetRequest() {
+      document.getElementById("register-form").hidden = true;
+      document.getElementById("login-form").hidden = true;
+      document.getElementById("password-reset-form").hidden = true;
+      document.getElementById("password-reset-request-form").hidden = false;
+      document.getElementById("forgot-password-link").hidden = true;
+      document.getElementById("account-switch-row").hidden = true;
+      document.getElementById("guest-entry-section").hidden = true;
+      document.getElementById("access-title").textContent = "Recupera tu cuenta";
+      document.getElementById("access-intro").textContent = "Escribe el correo de tu cuenta. Si está registrado, te enviaremos un enlace seguro para elegir una contraseña nueva.";
+      document.getElementById("reset-request-error").textContent = "";
+      document.getElementById("reset-request-feedback").textContent = "Te enviaremos un enlace de un solo uso válido durante 30 minutos.";
+      document.getElementById("reset-request-email").value = document.getElementById("login-email").value;
+      document.getElementById("reset-request-email").focus();
+    }
+
+    function showPasswordResetForm(token) {
+      pendingPasswordResetToken = token;
+      document.getElementById("register-form").hidden = true;
+      document.getElementById("login-form").hidden = true;
+      document.getElementById("password-reset-request-form").hidden = true;
+      document.getElementById("password-reset-form").hidden = false;
+      document.getElementById("forgot-password-link").hidden = true;
+      document.getElementById("account-switch-row").hidden = true;
+      document.getElementById("guest-entry-section").hidden = true;
+      document.getElementById("access-title").textContent = "Elige una contraseña nueva";
+      document.getElementById("access-intro").textContent = "Crea una contraseña de al menos 8 caracteres. El enlace se puede usar una sola vez.";
+      document.getElementById("reset-password-error").textContent = "";
+      document.getElementById("reset-new-password").focus();
+    }
+
+    function initializePasswordResetFromFragment() {
+      const prefix = "#reset-password=";
+      if (!window.location.hash.startsWith(prefix)) return false;
+      const token = window.location.hash.slice(prefix.length);
+      history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      if (!/^[a-f0-9]{64}$/.test(token)) {
+        showPasswordResetRequest();
+        document.getElementById("reset-request-error").textContent = "El enlace no es válido. Solicita uno nuevo.";
+        return true;
+      }
+      showPasswordResetForm(token);
+      return true;
     }
 
     function openCustomerArea() {
@@ -2269,6 +2345,8 @@
       enterGuestStore(visitor);
     });
     document.getElementById("account-switch").addEventListener("click", () => setAccountMode(!document.getElementById("register-form").hidden));
+    document.getElementById("forgot-password-link").addEventListener("click", showPasswordResetRequest);
+    document.querySelectorAll("[data-back-to-login]").forEach(button => button.addEventListener("click", () => setAccountMode(true)));
     const welcomeHour = new Date().getHours();
     const welcomeGreeting = welcomeHour >= 6 && welcomeHour < 12
       ? "Buenos días. Estoy para servirle; es un gusto tenerle aquí."
@@ -2689,6 +2767,63 @@
         : document.getElementById("register-name");
       nextInput.focus();
     });
+    document.getElementById("password-reset-request-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const formElement = event.currentTarget;
+      if (!formElement.reportValidity()) return;
+      const submitButton = formElement.querySelector('button[type="submit"]');
+      const error = document.getElementById("reset-request-error");
+      const feedback = document.getElementById("reset-request-feedback");
+      error.textContent = "";
+      feedback.textContent = "Enviando solicitud…";
+      submitButton.disabled = true;
+      try {
+        await localApi("/api/local/password-reset/request", {
+          method: "POST",
+          body: JSON.stringify({ email: String(new FormData(formElement).get("email")).trim().toLowerCase() })
+        });
+        feedback.textContent = "Si el correo corresponde a una cuenta, recibirás un enlace de recuperación. Revisa también la carpeta de correo no deseado.";
+        formElement.reset();
+      } catch (requestError) {
+        feedback.textContent = "";
+        error.textContent = requestError.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+    document.getElementById("password-reset-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const formElement = event.currentTarget;
+      if (!formElement.reportValidity()) return;
+      const form = new FormData(formElement);
+      const password = String(form.get("password"));
+      const confirmation = String(form.get("confirm"));
+      const error = document.getElementById("reset-password-error");
+      if (password !== confirmation) {
+        error.textContent = "Las contraseñas no coinciden.";
+        return;
+      }
+      if (!pendingPasswordResetToken) {
+        error.textContent = "El enlace ya no está disponible. Solicita uno nuevo.";
+        return;
+      }
+      error.textContent = "";
+      const submitButton = formElement.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      try {
+        await localApi("/api/local/password-reset/complete", {
+          method: "POST",
+          body: JSON.stringify({ token: pendingPasswordResetToken, password })
+        });
+        formElement.reset();
+        setAccountMode(true);
+        document.getElementById("login-feedback").textContent = "Contraseña actualizada. Ya puedes iniciar sesión con la nueva contraseña.";
+      } catch (requestError) {
+        error.textContent = requestError.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
     document.getElementById("register-form").addEventListener("submit", async event => {
       event.preventDefault();
       const formElement = event.currentTarget;
@@ -2914,10 +3049,12 @@
     renderProducts();
     renderInstagramPromotions("account-instagram-promo-grid");
     renderCart();
-    restoreLocalSession().catch(error => {
-      console.error("No se pudo reanudar la sesión local de MMH Builds.", error);
-      notify("No se pudo reanudar la sesión. Recarga la página e inténtalo de nuevo.");
-    });
+    if (!initializePasswordResetFromFragment()) {
+      restoreLocalSession().catch(error => {
+        console.error("No se pudo reanudar la sesión local de MMH Builds.", error);
+        notify("No se pudo reanudar la sesión. Recarga la página e inténtalo de nuevo.");
+      });
+    }
   </script>
 </body>
 </html>

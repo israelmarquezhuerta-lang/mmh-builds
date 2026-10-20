@@ -7,3 +7,6 @@ binding = "DB"
 database_name = "mmh-builds"
 database_id = "0098b91b-434b-4e31-b4c9-b89dd36bbab7"
 migrations_dir = "migrations"
+
+[vars]
+APP_BASE_URL = "https://mmh-builds.pages.dev"

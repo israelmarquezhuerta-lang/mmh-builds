@@ -21,6 +21,18 @@ GEMINI_API_KEY=pega_aqui_tu_clave_local
 
 La clave permanece en tu computadora. No la pegues en el chat ni la publiques en el sitio.
 
+## Recuperación de contraseña
+
+La pantalla incluye «¿Olvidaste tu contraseña?». Puedes preparar un proyecto de Google Apps Script con [`apps-script/Code.gs`](./apps-script/Code.gs), autorizar `authorizeMailSender` y desplegarlo como aplicación web. Para enviar correos desde la versión local, agrega estas variables a `.env.local` con la URL `/exec` y la misma clave secreta que guardaste en las propiedades del script:
+
+```text
+GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/ID_DEL_DESPLIEGUE/exec
+PASSWORD_RESET_MAIL_SECRET=una_clave_aleatoria_larga_de_32_caracteres_o_mas
+APP_BASE_URL=http://127.0.0.1:4173
+```
+
+El envío lo hace el servidor local desde la cuenta Google que autorizó Apps Script. Nunca pegues la clave en `index.html` ni la subas a GitHub. Sin estas variables, la app explica que el envío todavía no está configurado.
+
 ## Estado actual
 
 Puedes abrir el menú principal como visitante después de dejar únicamente tu nombre y un teléfono real (celular, casa u oficina). Tu rango será **Cliente explorando**, sin puntos ni descuentos. Esos datos se guardan localmente en `data/mmh-local.sqlite` o, si el servidor anterior sigue activo, en el almacenamiento de este navegador. Para registrar una solicitud de pedido, guardar pedidos o consultar tu cuenta, inicia sesión o crea una cuenta.

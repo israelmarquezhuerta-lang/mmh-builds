@@ -1,6 +1,7 @@
 api/
 functions/
 migrations/
+apps-script/
 data/
 .env*
 .gitignore

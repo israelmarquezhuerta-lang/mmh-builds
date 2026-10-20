@@ -25,6 +25,13 @@ database.exec(`
     expires_at INTEGER NOT NULL
   );
   CREATE INDEX IF NOT EXISTS sessions_by_email ON sessions(email);
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    token_hash TEXT PRIMARY KEY,
+    email TEXT NOT NULL REFERENCES customers(email) ON DELETE CASCADE,
+    expires_at INTEGER NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS password_reset_tokens_by_email ON password_reset_tokens(email);
   CREATE TABLE IF NOT EXISTS orders (
     id TEXT PRIMARY KEY,
     email TEXT NOT NULL REFERENCES customers(email),
@@ -126,6 +133,57 @@ function login({ email: rawEmail, password }) {
     throw Object.assign(new Error("Correo o contraseña incorrectos."), { status: 401 });
   }
   return { customer: customerFromRow(row), token: createSession(email) };
+}
+
+function issuePasswordReset(rawEmail) {
+  const email = normalizeEmail(rawEmail);
+  if (!emailPattern.test(email) || email.length > 254) {
+    throw Object.assign(new Error("Escribe un correo electrónico válido."), { status: 400 });
+  }
+  const customer = database.prepare("SELECT email FROM customers WHERE email = ?").get(email);
+  if (!customer) return null;
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const now = Date.now();
+  database.prepare("DELETE FROM password_reset_tokens WHERE expires_at <= ? OR email = ?").run(now, email);
+  database.prepare(`INSERT INTO password_reset_tokens (token_hash, email, expires_at, created_at)
+    VALUES (?, ?, ?, ?)`)
+    .run(tokenHash, email, now + 30 * 60 * 1000, new Date(now).toISOString());
+  return { email, token };
+}
+
+function revokePasswordReset(token) {
+  if (!/^[a-f0-9]{64}$/.test(String(token || ""))) return;
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  database.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").run(tokenHash);
+}
+
+function resetPassword({ token, password }) {
+  const cleanToken = String(token || "");
+  const cleanPassword = String(password || "");
+  if (!/^[a-f0-9]{64}$/.test(cleanToken) || cleanPassword.length < 8 || cleanPassword.length > 256) {
+    throw Object.assign(new Error("El enlace no es válido o ya venció. Solicita uno nuevo."), { status: 400 });
+  }
+  const tokenHash = createHash("sha256").update(cleanToken).digest("hex");
+  const now = Date.now();
+
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    const reset = database.prepare("SELECT email FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ?")
+      .get(tokenHash, now);
+    if (!reset) throw Object.assign(new Error("El enlace no es válido o ya venció. Solicita uno nuevo."), { status: 400 });
+    const salt = randomBytes(16).toString("hex");
+    const passwordHash = scryptSync(cleanPassword, salt, 64).toString("hex");
+    database.prepare("UPDATE customers SET salt = ?, password_hash = ? WHERE email = ?")
+      .run(salt, passwordHash, reset.email);
+    database.prepare("DELETE FROM sessions WHERE email = ?").run(reset.email);
+    database.prepare("DELETE FROM password_reset_tokens WHERE email = ?").run(reset.email);
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 function findSession(token) {
@@ -243,4 +301,4 @@ function verifyOrderPayment(id) {
   return listOrders(order.email).find(item => item.id === id);
 }
 
-module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, listOrders, login, register, updateOrderStage, verifyOrderPayment };
+module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, issuePasswordReset, listOrders, login, register, resetPassword, revokePasswordReset, updateOrderStage, verifyOrderPayment };
