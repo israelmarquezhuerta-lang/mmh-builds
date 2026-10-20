@@ -1,6 +1,7 @@
 import chatConfig from "../../chat-config.js";
 import loyalty from "../../loyalty.js";
 import catalog from "../../catalog.js";
+import payments from "../../payments.js";
 
 const {
   MODEL,
@@ -286,9 +287,8 @@ async function createVisitorLead(db, input) {
   return { id: Number(result.meta.last_row_id), name, phone, createdAt };
 }
 
-async function listOrders(db, email) {
-  const result = await db.prepare("SELECT * FROM orders WHERE email = ? ORDER BY created_at ASC").bind(email).all();
-  return (result.results || []).map(row => ({
+function orderFromRow(row) {
+  return {
     id: row.id,
     subtotal: row.subtotal,
     discountRate: row.discount_rate,
@@ -301,7 +301,91 @@ async function listOrders(db, email) {
     createdAt: row.created_at,
     stage: row.stage,
     items: JSON.parse(row.items_json)
-  }));
+  };
+}
+
+async function listOrders(db, email) {
+  const result = await db.prepare("SELECT * FROM orders WHERE email = ? ORDER BY created_at ASC").bind(email).all();
+  return (result.results || []).map(orderFromRow);
+}
+
+async function getOrderForCustomer(db, email, id) {
+  const row = await db.prepare("SELECT * FROM orders WHERE id = ? AND email = ?").bind(id, email).first();
+  return row ? { ...orderFromRow(row), paymentIntentId: row.payment_intent_id } : null;
+}
+
+function requireStripe(env) {
+  if (!payments.isConfigured(env)) {
+    throw apiError("El pago con tarjeta todavía no está disponible. Escríbenos por WhatsApp con tu folio para pagar.", 503);
+  }
+}
+
+async function markOrderPaid(db, order, intent) {
+  if (!payments.paymentMatchesOrder(intent, order)) return false;
+  await db.prepare("UPDATE orders SET payment_status = ?, payment = ?, payment_intent_id = ? WHERE id = ? AND payment_status != ?")
+    .bind(payments.paidStatus, "Tarjeta (Stripe)", intent.id, order.id, payments.paidStatus)
+    .run();
+  return true;
+}
+
+async function startOrderPayment(db, env, email, id) {
+  requireStripe(env);
+  const order = await getOrderForCustomer(db, email, id);
+  if (!order) throw apiError("No se encontró ese pedido.", 404);
+  if (order.paymentStatus === payments.paidStatus) throw apiError("Este pedido ya está pagado.", 409);
+  if (order.quoteRequired || !(order.total > 0)) {
+    throw apiError("Este pedido incluye servicios por cotizar. MMH te confirmará el precio antes del pago.", 409);
+  }
+  const row = await db.prepare("SELECT stripe_customer_id FROM customers WHERE email = ?").bind(email).first();
+  const stripeCustomerId = await payments.ensureCustomer(env.STRIPE_SECRET_KEY, row?.stripe_customer_id, order.customer);
+  if (!row?.stripe_customer_id) {
+    await db.prepare("UPDATE customers SET stripe_customer_id = ? WHERE email = ?").bind(stripeCustomerId, email).run();
+  }
+  const intent = await payments.createOrReusePaymentIntent(env.STRIPE_SECRET_KEY, { order, stripeCustomerId });
+  if (intent.status === "succeeded") {
+    await markOrderPaid(db, order, intent);
+    throw apiError("Este pedido ya está pagado.", 409);
+  }
+  if (intent.id !== order.paymentIntentId) {
+    await db.prepare("UPDATE orders SET payment_intent_id = ? WHERE id = ?").bind(intent.id, order.id).run();
+  }
+  return {
+    clientSecret: intent.client_secret,
+    customerId: stripeCustomerId,
+    publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+    amount: order.total,
+    currency: payments.currency
+  };
+}
+
+async function syncOrderPayment(db, env, email, id) {
+  requireStripe(env);
+  const order = await getOrderForCustomer(db, email, id);
+  if (!order) throw apiError("No se encontró ese pedido.", 404);
+  let status = order.paymentStatus === payments.paidStatus ? "succeeded" : "requires_payment_method";
+  if (status !== "succeeded" && order.paymentIntentId) {
+    const intent = await payments.retrievePaymentIntent(env.STRIPE_SECRET_KEY, order.paymentIntentId);
+    status = intent.status;
+    if (status === "succeeded" && !(await markOrderPaid(db, order, intent))) status = "mismatch";
+  }
+  const { paymentIntentId, ...updated } = await getOrderForCustomer(db, email, id);
+  return { order: updated, status };
+}
+
+async function handleStripeWebhook(request, env) {
+  const db = getDatabase(env);
+  const rawBody = await request.text();
+  if (rawBody.length > maxBodyBytes * 4) return json(413, { error: "La solicitud es demasiado grande." });
+  const event = await payments.verifyWebhook(rawBody, request.headers.get("stripe-signature"), env.STRIPE_WEBHOOK_SECRET);
+  if (!event) return json(400, { error: "Firma de webhook no válida." });
+  if (event.type === "payment_intent.succeeded") {
+    const intent = event.data.object;
+    const row = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(String(intent.metadata?.order_id || "")).first();
+    if (!row || !(await markOrderPaid(db, orderFromRow(row), intent))) {
+      console.error("Pago de Stripe sin pedido coincidente:", intent.id);
+    }
+  }
+  return json(200, { received: true });
 }
 
 async function getCustomerLoyalty(db, email) {
@@ -334,8 +418,8 @@ async function createOrder(db, email, input) {
     discountRate,
     discountAmount,
     total: subtotal - discountAmount,
-    payment: String(input.payment || "Por acordar tras la confirmación de MMH").slice(0, 80),
-    paymentStatus: quoteRequired ? "Pendiente de confirmación de cotización por MMH" : "Pendiente de confirmación por MMH",
+    payment: quoteRequired ? "Por acordar tras la cotización de MMH" : "Tarjeta (Stripe)",
+    paymentStatus: quoteRequired ? "Pendiente de confirmación de cotización por MMH" : payments.unpaidStatus,
     quoteRequired,
     customer,
     createdAt: new Date().toISOString(),
@@ -408,6 +492,15 @@ async function handleLocal(request, env, pathname) {
   if (pathname === "/api/local/orders" && request.method === "POST") {
     if (!customer) return json(401, { error: "Inicia sesión para registrar un pedido." });
     return json(201, { order: await createOrder(db, customer.email, await readJson(request)) });
+  }
+  const paymentMatch = pathname.match(/^\/api\/local\/orders\/(MMH-[A-F0-9]{8})\/(payment-intent|payment-status)$/);
+  if (paymentMatch && request.method === "POST") {
+    if (!customer) return json(401, { error: "Inicia sesión para pagar tu pedido." });
+    if (await enforceRateLimit(db, request, "payment", 30, authRateWindowMs)) {
+      return json(429, { error: "Has hecho varios intentos de pago. Espera unos minutos e inténtalo de nuevo." });
+    }
+    if (paymentMatch[2] === "payment-intent") return json(200, await startOrderPayment(db, env, customer.email, paymentMatch[1]));
+    return json(200, await syncOrderPayment(db, env, customer.email, paymentMatch[1]));
   }
   if (pathname.startsWith("/api/local/")) {
     return json(404, { error: "No se encontró esa función local." });
@@ -550,6 +643,7 @@ export async function onRequest({ request, env }) {
   const pathname = new URL(request.url).pathname;
   try {
     if (pathname === "/api/chat") return await handleChat(request, env);
+    if (pathname === "/api/stripe/webhook" && request.method === "POST") return await handleStripeWebhook(request, env);
     if (pathname.startsWith("/api/local/")) return await handleLocal(request, env, pathname);
     return json(404, { error: "No se encontró esa función." });
   } catch (error) {

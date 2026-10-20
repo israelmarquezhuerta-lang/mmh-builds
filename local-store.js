@@ -4,6 +4,7 @@ const path = require("node:path");
 const { DatabaseSync } = require("node:sqlite");
 const { calculateLoyalty } = require("./loyalty");
 const { priceOrderItems } = require("./catalog");
+const payments = require("./payments");
 
 const dataDirectory = path.join(__dirname, "data");
 fs.mkdirSync(dataDirectory, { recursive: true });
@@ -71,6 +72,12 @@ if (ensureOrderColumn("subtotal", "REAL NOT NULL DEFAULT 0")) {
 }
 ensureOrderColumn("discount_rate", "REAL NOT NULL DEFAULT 0");
 ensureOrderColumn("discount_amount", "REAL NOT NULL DEFAULT 0");
+if (ensureOrderColumn("payment_intent_id", "TEXT")) {
+  database.exec("CREATE UNIQUE INDEX IF NOT EXISTS orders_by_payment_intent ON orders(payment_intent_id)");
+}
+if (!database.prepare("PRAGMA table_info(customers)").all().some(column => column.name === "stripe_customer_id")) {
+  database.exec("ALTER TABLE customers ADD COLUMN stripe_customer_id TEXT");
+}
 
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -233,8 +240,8 @@ function createOrder(email, input) {
     discountRate,
     discountAmount,
     total: subtotal - discountAmount,
-    payment: String(input.payment || "Por acordar tras la confirmación de MMH").slice(0, 80),
-    paymentStatus: quoteRequired ? "Pendiente de confirmación de cotización por MMH" : "Pendiente de confirmación por MMH",
+    payment: quoteRequired ? "Por acordar tras la cotización de MMH" : "Tarjeta (Stripe)",
+    paymentStatus: quoteRequired ? "Pendiente de confirmación de cotización por MMH" : payments.unpaidStatus,
     quoteRequired,
     customer,
     createdAt: new Date().toISOString(),
@@ -252,8 +259,8 @@ function createOrder(email, input) {
   return order;
 }
 
-function listOrders(email) {
-  return database.prepare("SELECT * FROM orders WHERE email = ? ORDER BY created_at ASC").all(email).map(row => ({
+function orderFromRow(row) {
+  return {
     id: row.id,
     subtotal: row.subtotal,
     discountRate: row.discount_rate,
@@ -266,7 +273,40 @@ function listOrders(email) {
     createdAt: row.created_at,
     stage: row.stage,
     items: JSON.parse(row.items_json)
-  }));
+  };
+}
+
+function listOrders(email) {
+  return database.prepare("SELECT * FROM orders WHERE email = ? ORDER BY created_at ASC").all(email).map(orderFromRow);
+}
+
+function getOrderForCustomer(email, id) {
+  const row = database.prepare("SELECT * FROM orders WHERE id = ? AND email = ?").get(id, email);
+  return row ? { ...orderFromRow(row), paymentIntentId: row.payment_intent_id } : null;
+}
+
+function getOrderById(id) {
+  const row = database.prepare("SELECT * FROM orders WHERE id = ?").get(id);
+  return row ? orderFromRow(row) : null;
+}
+
+function getStripeCustomerId(email) {
+  return database.prepare("SELECT stripe_customer_id FROM customers WHERE email = ?").get(email)?.stripe_customer_id || null;
+}
+
+function setStripeCustomerId(email, stripeCustomerId) {
+  database.prepare("UPDATE customers SET stripe_customer_id = ? WHERE email = ?").run(stripeCustomerId, email);
+}
+
+function setOrderPaymentIntent(id, paymentIntentId) {
+  database.prepare("UPDATE orders SET payment_intent_id = ? WHERE id = ?").run(paymentIntentId, id);
+}
+
+function markOrderPaid(order, intent) {
+  if (!payments.paymentMatchesOrder(intent, order)) return false;
+  database.prepare("UPDATE orders SET payment_status = ?, payment = ?, payment_intent_id = ? WHERE id = ? AND payment_status != ?")
+    .run(payments.paidStatus, "Tarjeta (Stripe)", intent.id, order.id, payments.paidStatus);
+  return true;
 }
 
 function verifyOrderPayment(id) {
@@ -285,4 +325,4 @@ function verifyOrderPayment(id) {
   return listOrders(order.email).find(item => item.id === id);
 }
 
-module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, issuePasswordReset, listOrders, login, register, resetPassword, revokePasswordReset, verifyOrderPayment };
+module.exports = { createOrder, createVisitorLead, deleteSession, findSession, getCustomerLoyalty, getOrderById, getOrderForCustomer, getStripeCustomerId, issuePasswordReset, listOrders, login, markOrderPaid, register, resetPassword, revokePasswordReset, setOrderPaymentIntent, setStripeCustomerId, verifyOrderPayment };

@@ -74,3 +74,52 @@ WHERE id = 'MMH-FOLIO_REAL';
 El servidor recalcula el subtotal de cada pedido con el catálogo de [`catalog.js`](./catalog.js) e ignora precios o totales enviados por el navegador. Si cambias un precio, cámbialo en `catalog.js`.
 
 La aplicación no procesa pagos. La disponibilidad y el precio final deben ser confirmados por MMH; los importes del catálogo son referencias. Protege los datos de contacto y cumple las obligaciones de privacidad aplicables antes de promocionar el sitio.
+
+## Pagos con tarjeta (Stripe)
+
+La página usa el **Payment Element** de Stripe: Stripe muestra los campos de la tarjeta en su propio formulario seguro. MMH nunca recibe los datos de la tarjeta. Por eso funciona igual en la web y en la app Android (TWA). El banco puede pedir 3D Secure; el servidor lo solicita en cada pago (`request_three_d_secure: any`).
+
+- El monto **lo calcula el servidor** a partir del pedido guardado. El navegador nunca manda el monto.
+- Los pedidos con servicios (cotización) no se pueden pagar hasta que MMH les ponga precio.
+- Cuando Stripe confirma el pago, el pedido cambia a `Pago verificado` y cuenta para MMH Rewards.
+
+### 1. Claves
+
+1. En Stripe → **Developers → API keys** copia la clave publicable (`pk_test_…`) y la secreta (`sk_test_…`).
+2. Para probar en tu computadora, ponlas en `.env.local` (este archivo nunca se sube a GitHub):
+   ```
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_PUBLISHABLE_KEY=pk_test_...
+   ```
+3. En Cloudflare Pages → tu proyecto → **Settings → Variables and Secrets**, agrega `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` y `STRIPE_WEBHOOK_SECRET` como **Secret**.
+4. Para cobrar de verdad, cambia las claves por las `sk_live_…` / `pk_live_…`, tanto en Cloudflare como en el webhook en modo Live. No pegues las claves `live` en chats ni en archivos del repositorio.
+
+### 2. Base de datos
+
+Ejecuta la migración nueva una sola vez:
+```
+npx wrangler d1 execute mmh-builds --remote --file=migrations/0003_stripe_payments.sql
+```
+
+### 3. Webhook
+
+1. En Stripe → **Developers → Webhooks → Add endpoint**, pon la URL `https://mmh-builds.pages.dev/api/stripe/webhook`.
+2. Elige el evento `payment_intent.succeeded`.
+3. Copia el **Signing secret** (`whsec_…`) y guárdalo en Cloudflare como `STRIPE_WEBHOOK_SECRET`.
+
+Aunque el webhook falle, la página consulta a Stripe al terminar el pago y marca el pedido como pagado. El webhook sirve para no perder pagos si el cliente cierra la app antes de tiempo.
+
+### 4. Tarjetas de prueba (modo Test)
+
+| Tarjeta | Resultado |
+|---|---|
+| `4242 4242 4242 4242` | Pago aprobado (con verificación 3D Secure de prueba) |
+| `4000 0027 6000 3184` | Siempre pide 3D Secure |
+| `4000 0000 0000 9995` | Rechazada por fondos insuficientes |
+| `4000 0000 0000 0002` | Rechazada por el banco |
+
+Usa cualquier fecha futura, cualquier CVC y cualquier código postal.
+
+### Reembolsos
+
+Si un producto ya no está disponible, haz el reembolso desde el panel de Stripe (Payments → el pago → Refund) y avisa al cliente.
