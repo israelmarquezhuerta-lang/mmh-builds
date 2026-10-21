@@ -4,6 +4,12 @@ function database(){const sqlite=new DatabaseSync(':memory:');sqlite.exec('CREAT
 function event(messages,statuses=[]){return{entry:[{changes:[{value:{contacts:[{wa_id:'5215512345678',profile:{name:'Cliente de prueba'}}],messages,statuses}}]}]};}
 const incoming=(id='incoming-1',type='text')=>({id,from:'5215512345678',timestamp:'1792550000',type,text:{body:'Quiero una PC'}});
 const request=body=>new Request('https://mmh-builds.pages.dev/api/whatsapp',{method:'POST',body:JSON.stringify(body)});
+test('owner diagnostics check Meta read-only and never return credentials',async()=>{
+ const DB=database(),original=global.fetch,{hash}=await import('../oauth-core.mjs');
+ DB.sqlite.prepare('INSERT INTO sessions VALUES(?,?,?)').run(await hash('owner-token'),'owner@example.test',Date.now()+60000);
+ const calls=[];global.fetch=async(url,options)=>{calls.push({url,options});return Response.json({display_phone_number:'+52 56 3493 5312',verified_name:'MMH Builds'});};
+ try {const env={DB,MMH_ADMIN_EMAILS:'owner@example.test',WHATSAPP_TOKEN:'private-test-value',WHATSAPP_PHONE_ID:'12345',GEMINI_API_KEY:'private-gemini'};const r=await inbox.onRequestGet({request:new Request('https://mmh-builds.pages.dev/api/whatsapp-inbox?diagnostics=1',{headers:{Cookie:'mmh_local_session=owner-token'}}),env});const text=await r.text();assert.equal(r.status,200);assert.equal(JSON.parse(text).connection.businessNumber,'+52 56 3493 5312');assert.equal(calls.length,1);assert.equal(calls[0].options.method,undefined);assert.equal(text.includes('private-test-value'),false);assert.equal(text.includes('private-gemini'),false);}finally{global.fetch=original;DB.sqlite.close();}
+});
 test('incoming messages and Gemini replies are saved once and Mexico destination is retained',async()=>{
  const DB=database(),original=global.fetch;const calls=[];
  global.fetch=async(url,options)=>{calls.push({url,body:JSON.parse(options.body)});return String(url).includes('generativelanguage')?Response.json({candidates:[{content:{parts:[{text:'¿Qué presupuesto tienes?'}]}}]}):Response.json({messages:[{id:'outgoing-1'}]});};
