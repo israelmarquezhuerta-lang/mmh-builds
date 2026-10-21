@@ -12,3 +12,6 @@ local-store.js
 confirmar-pago-local.js
 chat-config.js
 wrangler.toml
+
+work/
+*.txt

@@ -716,7 +716,7 @@
             <button class="button secondary full" type="submit">Entrar al menú principal como visitante</button>
           </form>
         </section>
-        <p class="demo-notice">Las cuentas y los pedidos se guardan en el sistema donde está publicada la app. Los pagos y las entregas todavía no se procesan desde aquí.</p>
+        <p class="demo-notice">Las cuentas y los pedidos quedan guardados. Paga tus productos con tarjeta de crédito o débito mediante Stripe.</p>
       </div>
     </div>
   </section>
@@ -833,7 +833,7 @@
         <div class="account-order-list" id="account-cart-preview"></div>
       </section>
       <section class="account-module" id="module-orders" role="tabpanel" aria-labelledby="tab-orders" hidden>
-        <div class="section-head"><div><span class="eyebrow">Módulo 03 · Gestión</span><h2 style="margin-top:8px">Solicitudes y seguimiento</h2><p>Consulta tus solicitudes locales. MMH debe revisar y confirmar cada propuesta antes de cualquier pago.</p></div></div>
+        <div class="section-head"><div><span class="eyebrow">Módulo 03 · Gestión</span><h2 style="margin-top:8px">Solicitudes y seguimiento</h2><p>Consulta tus pedidos y paga con tarjeta. Los servicios a la medida requieren cotización.</p></div></div>
         <div class="account-order-list" id="account-orders"></div>
         <section id="seguimiento" hidden aria-labelledby="order-title">
           <div class="section-head"><div><span class="eyebrow">Seguimiento</span><h2 id="order-title" style="margin-top:8px">Detalle del pedido</h2></div></div>
@@ -843,9 +843,9 @@
       <section class="account-module" id="module-messages" role="tabpanel" aria-labelledby="tab-messages" hidden>
         <div class="section-head"><div><span class="eyebrow">Módulo 04 · Contacto y cotización</span><h2 style="margin-top:8px">Asistente a la vista</h2><p>El asesor está en la parte superior de tu espacio MMH. Puedes volver ahí cuando quieras para continuar tu recomendación o solicitar una cotización.</p></div></div>
         <a class="button secondary" href="#concierge-title" data-module-link="concierge">Volver al asistente ↑</a>
-        <p class="bot-payments">Para protegerte, esta demostración no publica datos bancarios ni verifica pagos. Solicita las instrucciones vigentes por WhatsApp después de revisar la selección y confirmar el total. No transfieras hasta validar los datos y el monto con MMH.</p>
+        <p class="bot-payments">Paga tus productos con tarjeta de crédito o débito mediante el formulario seguro de Stripe, sin enviar un WhatsApp antes. MMH no recibe ni guarda los datos de tu tarjeta.</p>
       </section>
-        <p class="demo-notice">El perfil y los pedidos quedan guardados en esta plataforma. Los pagos se coordinan por WhatsApp; todavía no hay cobro ni seguimiento logístico automático.</p>
+        <p class="demo-notice">El perfil y los pedidos quedan guardados. Stripe confirma los pagos con tarjeta; MMH coordina la preparación y entrega de tu pedido.</p>
     </section>
 
     <section class="digital-services" id="servicios-digitales" aria-labelledby="digital-title">
@@ -913,7 +913,7 @@
           <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20una%20laptop%20Dell%2C%20Lenovo%20o%20HP.%20Me%20interesa%20revisar%20opciones%20nuevas%20o%20seminuevas%2C%20segun%20disponibilidad.%20Para%20seminuevas%2C%20por%20favor%20confirmen%20el%20estado%2C%20funcionamiento%20y%20garantia%20de%206%20meses%20por%20escrito%20en%20la%20cotizacion.%20Acordare%20el%20pago%20despues%20de%20aceptar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
         </article>
       </div>
-      <p class="service-footnote">Todos estos productos y proyectos se cotizan por pedido en WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer">56 3493 5312 ↗</a>. MMH confirmará disponibilidad, modelo, alcance, garantía y precio por escrito. Revisa y acepta la cotización antes de acordar el pago; la app no procesa pagos.</p>
+      <p class="service-footnote">Todos estos productos y proyectos se cotizan por pedido en WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer">56 3493 5312 ↗</a>. MMH confirmará disponibilidad, modelo, alcance, garantía y precio por escrito. Revisa y acepta la cotización antes de acordar el pago; estos servicios se cotizan antes del pago.</p>
     </section>
 
     <section id="catalogo" class="product-section" aria-labelledby="catalog-title">
@@ -970,7 +970,7 @@
       <div class="cart-items" id="cart-items"></div>
       <section class="cart-progress" id="cart-progress" role="progressbar" aria-label="Avance de la solicitud" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-live="polite">
         <strong id="cart-progress-title">Tu selección está lista para empezar</strong>
-        <p id="cart-progress-copy">Elige componentes para preparar una solicitud. MMH confirmará el pedido antes de cualquier pago.</p>
+        <p id="cart-progress-copy">Elige tus productos, revisa el total y continúa al pago con tarjeta.</p>
         <div class="cart-progress-track" aria-hidden="true"><span id="cart-progress-fill"></span></div>
       </section>
       <section class="cart-ai" aria-labelledby="cart-ai-title">
@@ -1173,8 +1173,8 @@
         ...(selection.length ? selection : ["Carrito vacío."]),
         `Subtotal referencial de productos: ${peso(cartTotal())}. Servicios se cotizan aparte.`,
         pendingOrder,
-        "Un pedido es solo una solicitud local hasta que MMH confirme manualmente el modelo, compatibilidad, disponibilidad y precio final. No se procesan pagos.",
-        "Cuando el cliente diga claramente que quiere comprar o continuar el pedido, ayúdale a revisar la selección y el resumen antes del siguiente paso. La app adjuntará un enlace de WhatsApp con un borrador de solicitud que el cliente debe revisar y enviar; nunca afirmes que el mensaje ya se envió ni que el pedido o pago están confirmados.",
+        "Los productos del carrito se pagan directamente con tarjeta mediante Stripe, sin confirmación previa por WhatsApp. Los servicios sin precio requieren cotización. Solo el sistema de pagos confirma si un pedido está pagado.",
+        "Cuando el cliente diga claramente que quiere comprar o continuar el pedido, ayúdale a revisar la selección y el resumen antes del siguiente paso. Para productos, la app permite revisar el carrito y continuar al pago con tarjeta. Para servicios sin precio, ofrece cotización por WhatsApp. Nunca afirmes que el pedido o pago está confirmado sin verificación del sistema.",
         ...(beforeAccount
           ? ["Canal: bienvenida, antes de crear una cuenta."]
           : authenticatedCustomer
@@ -1260,13 +1260,24 @@
         const bubble = document.createElement("p");
         bubble.className = `${bubbleClass}${message.role === "user" ? " user" : ""}`;
         renderAssistantText(bubble, message.content);
+        if (message.checkout) {
+          const checkout = document.createElement("button");
+          checkout.type = "button";
+          checkout.className = "button";
+          checkout.textContent = "Revisar carrito y pagar con tarjeta";
+          checkout.addEventListener("click", () => {
+            if (cart.size) showOverlay("cart-overlay");
+            else notify("Agrega productos al carrito para continuar");
+          });
+          bubble.append(document.createElement("br"), checkout);
+        }
         if (message.whatsappUrl) {
           bubble.append(document.createElement("br"));
           const link = document.createElement("a");
           link.href = message.whatsappUrl;
           link.target = "_blank";
           link.rel = "noopener noreferrer";
-          link.textContent = "Continuar compra por WhatsApp ↗";
+          link.textContent = "Consultar cotización por WhatsApp ↗";
           bubble.append(link);
         }
         return bubble;
@@ -1300,7 +1311,7 @@
         const assistantMessage = {
           role: "assistant",
           content: reply,
-          ...(isReadyToPurchase(message) ? { whatsappUrl: buildWhatsAppPurchaseUrl(reply) } : {})
+          ...(isReadyToPurchase(message) ? (cartHasServices() || !cart.size ? { whatsappUrl: buildWhatsAppPurchaseUrl(reply) } : { checkout: true }) : {})
         };
         config.setHistory([...nextHistory, assistantMessage].slice(-20));
         renderGeminiThread(config.threadId, config.getHistory(), config.bubbleClass);
@@ -1325,7 +1336,7 @@
         ? "¡Tu selección va tomando forma!"
         : "Tu selección está lista para empezar";
       document.getElementById("cart-progress-copy").textContent = hasSelection
-        ? "Cuando quieras, solicita la revisión de MMH. Confirmaremos modelo, compatibilidad, disponibilidad y precio antes de cualquier pago."
+        ? "Revisa tu selección y continúa al pago seguro con tarjeta desde el carrito."
         : "Elige componentes para preparar una solicitud; no hay presión para comprar.";
       document.getElementById("cart-progress-fill").style.width = `${progress}%`;
       document.getElementById("cart-progress").setAttribute("aria-valuenow", String(progress));
@@ -1911,8 +1922,8 @@
       appendAssistantMessage("Revisé tu selección. Confirma los artículos y el total antes de registrar el pedido.");
       showAssistantReview(
         "Resumen de tu pedido",
-        `${summary}\n\nSubtotal referencial: ${peso(cartTotal())}\n\nEs una solicitud, no una compra confirmada. MMH deberá confirmar modelo, compatibilidad, existencias y precio final antes de cualquier pago.`,
-        [{ kind: "button", label: "Preparar solicitud para MMH", action: "checkout" }]
+        `${summary}\n\nSubtotal referencial: ${peso(cartTotal())}\n\nRevisa el total. En el siguiente paso registras tu pedido y pagas con tarjeta mediante Stripe, sin contactar antes por WhatsApp.`,
+        [{ kind: "button", label: "Continuar al pago con tarjeta", action: "checkout" }]
       );
       setAssistantOptions([{ label: "Empezar de nuevo", action: "reset" }]);
     }
@@ -1930,21 +1941,8 @@
     }
 
     function showPaymentStep(order) {
-      const items = order.items.map(item => `• ${item.quantity} × ${item.product.name}`).join("\n");
-      const benefitDetails = order.discountRate
-        ? `Beneficio de lealtad solicitado: ${order.discountRate}% (${peso(order.discountAmount)} estimados) sobre subtotal referencial ${peso(order.subtotal)}. Total estimado con beneficio: ${peso(order.total)}; pendiente de confirmación de MMH.`
-        : `Subtotal referencial: ${peso(order.subtotal)}.`;
-      const requestDetails = `Hola, soy ${order.customer.name}. Envié la solicitud ${order.id} desde MMH Builds.\n${benefitDetails}\nPor favor confirma manualmente modelos, compatibilidad, disponibilidad, precio final y plazo antes de aceptar el pedido. No realizaré ningún pago hasta recibir y aceptar la confirmación.`;
-      appendAssistantMessage(`Tu solicitud ${order.id} está guardada en esta app, pero todavía no se ha enviado ni confirmado por MMH. Puedes enviarla por WhatsApp para que revisemos los productos y te confirmemos precio y disponibilidad.`);
-      showAssistantReview(
-        "Solicitud guardada · falta confirmación de MMH",
-        `Folio local: ${order.id}\nArtículos:\n${items}\n\n${benefitDetails}\n\nEsta solicitud solo está guardada en esta app. Envía el resumen a MMH para confirmar disponibilidad, compatibilidad, precio final, beneficio y plazo. No se ha aceptado el pedido ni se ha procesado un pago.`,
-        [
-          { kind: "link", label: "Enviar solicitud a MMH por WhatsApp ↗", href: whatsappLink(requestDetails) }
-        ]
-      );
-      document.getElementById("assistant-transfer-details").hidden = false;
-      setAssistantOptions([{ label: "Empezar de nuevo", action: "reset" }]);
+      selectedOrder = order;
+      openPayment(order);
     }
 
     function setAccountMode(showLogin) {
@@ -2151,7 +2149,7 @@
         <div class="loyalty-meter">
           <div class="loyalty-meter-label"><strong>Progreso por compras confirmadas</strong><span>${loyalty.nextSpendLevel ? `${loyalty.spendProgress}%` : "Máximo"}</span></div>
           <div class="loyalty-progress" role="progressbar" aria-label="Progreso hacia el siguiente rango por compras" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${loyalty.spendProgress}"><span style="width:${loyalty.spendProgress}%"></span></div>
-          <p class="loyalty-note">${spendMessage} · Solo cuentan compras pagadas y confirmadas manualmente por MMH.</p>
+          <p class="loyalty-note">${spendMessage} · Solo cuentan compras con pago verificado.</p>
         </div>
         <div class="loyalty-tiers" aria-label="Niveles y descuentos MMH Rewards">
           ${MmhLoyalty.levels.map((level, index) => `<article class="loyalty-tier${index === loyalty.levelIndex ? " active" : ""}"><strong>${level.name}</strong><span>${index === 0 ? "10% inicial" : `${level.discountPercent}%`}</span><small>${tierRequirements[index]}${level.supplierPricing ? " · precios de proveedor" : ""}</small></article>`).join("")}
@@ -2195,22 +2193,36 @@
         tracking.type = "button";
         tracking.dataset.trackOrder = order.id;
         tracking.textContent = "Ver seguimiento";
-        const transfer = document.createElement("a");
+        const transfer = document.createElement(order.quoteRequired ? "a" : "button");
         transfer.className = "button";
-        const paymentMessage = order.quoteRequired
-          ? `Hola, soy ${order.customer.name}. Quiero cotizar los servicios incluidos en mi solicitud ${order.id}. Por favor confirma el alcance y precio antes de aceptar el pedido.`
-          : `Hola, soy ${order.customer.name}. Quiero confirmar mi solicitud ${order.id}. Por favor confirma modelos, compatibilidad, disponibilidad, precio final y plazo antes de aceptar el pedido. No haré ningún pago hasta recibir y aceptar la confirmación.`;
-        transfer.href = whatsappLink(paymentMessage);
-        transfer.target = "_blank";
-        transfer.rel = "noopener noreferrer";
-        transfer.textContent = order.quoteRequired ? "Continuar cotización ↗" : "Confirmar solicitud con MMH ↗";
-        actions.append(tracking, transfer);
+        if (order.quoteRequired) {
+          const paymentMessage = `Hola, soy ${order.customer.name}. Quiero cotizar los servicios incluidos en mi solicitud ${order.id}. Por favor confirma el alcance y precio antes de aceptar el pedido.`;
+          transfer.href = whatsappLink(paymentMessage);
+          transfer.target = "_blank";
+          transfer.rel = "noopener noreferrer";
+          transfer.textContent = "Continuar cotización ↗";
+        } else {
+          transfer.type = "button";
+          transfer.dataset.payOrder = order.id;
+          transfer.textContent = `Pagar con tarjeta ${peso(order.total)}`;
+        }
+        actions.append(tracking);
+        if (order.paymentStatus !== "Pago verificado") actions.append(transfer);
         card.append(summary, actions);
         list.append(card);
       });
     }
 
     document.getElementById("account-orders").addEventListener("click", event => {
+      const payButton = event.target.closest("[data-pay-order]");
+      if (payButton) {
+        const order = orders.find(item => item.id === payButton.dataset.payOrder);
+        if (order && !order.quoteRequired && order.paymentStatus !== "Pago verificado") {
+          selectedOrder = order;
+          openPayment(order);
+        }
+        return;
+      }
       const button = event.target.closest("[data-track-order]");
       if (!button) return;
       selectedOrder = orders.find(order => order.id === button.dataset.trackOrder) || null;
@@ -2945,7 +2957,7 @@
       const form = new FormData(formElement);
       const quoteRequired = cartHasServices();
       const orderInput = {
-        payment: "Por acordar después de la confirmación manual de MMH",
+        payment: quoteRequired ? "Por cotizar" : "Tarjeta (Stripe)",
         customer: {
           name: String(form.get("name")).trim(),
           email: currentCustomer.email,
@@ -2973,7 +2985,7 @@
       hideOverlay("checkout-overlay");
       document.getElementById("order-summary").textContent = quoteRequired
         ? `Solicitud ${latestOrder.id} guardada · Productos: subtotal referencial ${peso(latestOrder.subtotal)}${latestOrder.discountRate ? ` · beneficio estimado ${latestOrder.discountRate}% (-${peso(latestOrder.discountAmount)}) · subtotal estimado ${peso(latestOrder.total)}` : ""} · servicios por cotizar. MMH debe confirmar el alcance y precio; aún no se ha enviado ni aceptado.`
-        : `Solicitud ${latestOrder.id} guardada · Subtotal referencial ${peso(latestOrder.subtotal)}${latestOrder.discountRate ? ` · beneficio estimado ${latestOrder.discountRate}% (-${peso(latestOrder.discountAmount)}) · total estimado ${peso(latestOrder.total)}` : ""} · Aún falta enviarla y recibir la confirmación manual de MMH.`;
+        : `Solicitud ${latestOrder.id} guardada · Subtotal referencial ${peso(latestOrder.subtotal)}${latestOrder.discountRate ? ` · beneficio estimado ${latestOrder.discountRate}% (-${peso(latestOrder.discountAmount)}) · total estimado ${peso(latestOrder.total)}` : ""} · Continúa al formulario seguro para pagar con tarjeta.`;
       renderOrderSteps();
       setAccountModule("messages");
       formElement.reset();
@@ -3058,6 +3070,9 @@
       try {
         const [StripeConstructor, intent] = await Promise.all([loadStripe(), paymentApi(order, "payment-intent")]);
         if (paymentState.order !== order) return;
+        if (intent.publishableKey.startsWith("pk_test_")) {
+          setPaymentMessage("Modo de prueba: este formulario no realiza cobros reales.", "info");
+        }
         paymentState.stripe = StripeConstructor(intent.publishableKey, { locale: "es-419" });
         paymentState.elements = paymentState.stripe.elements({
           clientSecret: intent.clientSecret,
@@ -3151,8 +3166,8 @@
     document.getElementById("payment-close").addEventListener("click", closePayment);
     document.getElementById("payment-view-order").addEventListener("click", () => {
       hideOverlay("payment-overlay");
+      selectedOrder = paymentState.order;
       paymentState.order = null;
-      selectedOrder = latestOrder;
       setAccountModule("orders");
       renderOrderSteps();
       const section = document.getElementById("seguimiento");

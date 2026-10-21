@@ -9,8 +9,11 @@
   const unpaidStatus = "Pendiente de pago";
   const webhookToleranceSeconds = 300;
 
-  const isConfigured = env => /^sk_(test|live)_/.test(String(env.STRIPE_SECRET_KEY || "")) &&
-    /^pk_(test|live)_/.test(String(env.STRIPE_PUBLISHABLE_KEY || ""));
+  const isConfigured = env => {
+    const secretMode = /^sk_(test|live)_/.exec(String(env.STRIPE_SECRET_KEY || ""))?.[1];
+    const publicMode = /^pk_(test|live)_/.exec(String(env.STRIPE_PUBLISHABLE_KEY || ""))?.[1];
+    return Boolean(secretMode && secretMode === publicMode);
+  };
 
   const amountInCents = total => Math.round(Number(total) * 100);
 

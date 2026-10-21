@@ -316,7 +316,7 @@ async function getOrderForCustomer(db, email, id) {
 
 function requireStripe(env) {
   if (!payments.isConfigured(env)) {
-    throw apiError("El pago con tarjeta todavía no está disponible. Escríbenos por WhatsApp con tu folio para pagar.", 503);
+    throw apiError("El pago con tarjeta no está disponible temporalmente. Tu pedido está guardado; inténtalo de nuevo más tarde.", 503);
   }
 }
 

@@ -69,7 +69,7 @@ async function readRawBody(req) {
 
 function requireStripe() {
   if (!payments.isConfigured(process.env)) {
-    throw Object.assign(new Error("El pago con tarjeta todavía no está disponible. Escríbenos por WhatsApp con tu folio para pagar."), { status: 503 });
+    throw Object.assign(new Error("El pago con tarjeta no está disponible temporalmente. Tu pedido está guardado; inténtalo de nuevo más tarde."), { status: 503 });
   }
 }
 

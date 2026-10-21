@@ -12,3 +12,6 @@ node_modules/
 *.aab
 *.zip
 signing-key-info.txt
+work/
+clave secreta*.txt
+facebook.txt
