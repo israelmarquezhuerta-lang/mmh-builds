@@ -10,7 +10,7 @@
   const webhookToleranceSeconds = 300;
 
   const isConfigured = env => {
-    const secretMode = /^sk_(test|live)_/.exec(String(env.STRIPE_SECRET_KEY || ""))?.[1];
+    const secretMode = /^(?:sk|rk)_(test|live)_/.exec(String(env.STRIPE_SECRET_KEY || ""))?.[1];
     const publicMode = /^pk_(test|live)_/.exec(String(env.STRIPE_PUBLISHABLE_KEY || ""))?.[1];
     return Boolean(secretMode && secretMode === publicMode);
   };
