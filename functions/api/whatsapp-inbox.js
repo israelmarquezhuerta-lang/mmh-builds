@@ -11,6 +11,20 @@ export async function onRequestGet({request,env}) {
     if (!customer) return json(401,{error:'La sesión caducó. Vuelve a entrar.'});
     const admins = String(env.MMH_ADMIN_EMAILS || '').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
     if (!admins.includes(customer.email.toLowerCase())) return json(403,{error:'Tu cuenta no está autorizada para consultar las conversaciones. Revisa el correo administrador configurado en MMH.'});
+    if (new URL(request.url).searchParams.get('diagnostics') === '1') {
+      const configured={whatsappToken:Boolean(env.WHATSAPP_TOKEN),phoneId:Boolean(env.WHATSAPP_PHONE_ID),webhookVerifyToken:Boolean(env.WHATSAPP_VERIFY_TOKEN),metaSignatureSecret:Boolean(env.META_APP_SECRET),geminiKey:Boolean(env.GEMINI_API_KEY)};
+      let connection={checked:false};
+      if(configured.whatsappToken && configured.phoneId){
+        try {
+          const url=new URL(`https://graph.facebook.com/v21.0/${encodeURIComponent(env.WHATSAPP_PHONE_ID)}`);
+          url.searchParams.set('fields','display_phone_number,verified_name');
+          const result=await fetch(url,{headers:{Authorization:`Bearer ${env.WHATSAPP_TOKEN}`},signal:AbortSignal.timeout(10000)});
+          const data=await result.json();
+          connection={checked:true,ok:result.ok,httpStatus:result.status,...(result.ok?{businessNumber:data.display_phone_number,businessName:data.verified_name}:{errorCode:data.error?.code || null,errorSubcode:data.error?.error_subcode || null})};
+        }catch{connection={checked:true,ok:false,unavailable:true};}
+      }
+      return json(200,{configured,connection});
+    }
     await ensureWhatsAppInbox(env.DB);
     const phone = new URL(request.url).searchParams.get('phone');
     if (phone !== null) {
