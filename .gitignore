@@ -13,5 +13,6 @@ node_modules/
 *.zip
 signing-key-info.txt
 work/
+outputs/
 clave secreta*.txt
 facebook.txt

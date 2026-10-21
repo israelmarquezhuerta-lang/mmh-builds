@@ -3062,7 +3062,7 @@
       Object.assign(paymentState, { order, stripe: null, elements: null, busy: false, paid: false });
       document.getElementById("payment-form").hidden = false;
       document.getElementById("payment-success").hidden = true;
-      document.getElementById("payment-summary").textContent = `Folio ${order.id} · Total a pagar ${peso(order.total)} MXN`;
+      document.getElementById("payment-summary").textContent = `Folio ${order.id} · Total a pagar ${peso(order.total)}`;
       document.getElementById("payment-element").replaceChildren();
       setPaymentMessage("");
       setPaymentButton("Cargando formulario seguro…", false);
