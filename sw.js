@@ -1,4 +1,4 @@
-const CACHE_NAME = "mmh-builds-shell-v39";
+const CACHE_NAME = "mmh-builds-shell-v40";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./catalog.js",
   "./storefront.css",
   "./storefront.js",
+  "./whatsapp-admin.js",
   "./manifest.webmanifest",
   "./assets/mmh-builds-icon-180.png",
   "./assets/mmh-builds-icon-192.png",
@@ -63,4 +64,12 @@ self.addEventListener("fetch", event => {
       return response;
     }))
   );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+    const existing = windows.find(client => new URL(client.url).origin === self.location.origin);
+    return existing ? existing.focus() : clients.openWindow('./');
+  }));
 });

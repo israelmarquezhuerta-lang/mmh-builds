@@ -1,3 +1,4 @@
+import { handleAdmin as handleWhatsAppAdmin } from '../_lib/whatsapp.js';
 import chatConfig from "../../chat-config.js";
 import loyalty from "../../loyalty.js";
 import catalog from "../../catalog.js";
@@ -452,6 +453,10 @@ async function handleLocal(request, env, pathname) {
   if (pathname.startsWith("/api/local/admin/")) {
     const admins = String(env.MMH_ADMIN_EMAILS || "").split(",").map(email => email.trim().toLowerCase()).filter(Boolean);
     if (!customer || !admins.includes(customer.email.toLowerCase())) return json(403, { error: "Este espacio es exclusivo de administración." });
+    if (pathname === "/api/local/admin/whatsapp" || pathname.startsWith("/api/local/admin/whatsapp/")) {
+      if (request.method === "POST" && await enforceRateLimit(db, request, "whatsapp-admin", 60, 60_000)) return json(429, { error: "Espera un minuto antes de continuar." });
+      return await handleWhatsAppAdmin(request, env, db, pathname, customer.email, readJson);
+    }
     if (pathname === "/api/local/admin/orders" && request.method === "GET") {
       const rows = await db.prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT 200").all();
       return json(200, { orders: (rows.results || []).map(orderFromRow) });
