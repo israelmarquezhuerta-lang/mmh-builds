@@ -1,43 +1,47 @@
+async function llamarGemini(userText, geminiKey) {
+  if (!geminiKey) return null;
+
+  const prompt = `Eres el asesor virtual inteligente de "MMH Builds", una tienda y taller de ensamble de computadoras de alto rendimiento y venta de componentes (tarjetas RTX, procesadores Ryzen/Intel, etc.) en México.
+Tu tono es experto, profesional, entusiasta y muy amable.
+El cliente te escribió por WhatsApp: "${userText}".
+Responde de forma clara, breve (estilo mensaje de WhatsApp) y útil en español de México. Si te preguntan por una cotización o ensamble, pregunta el uso principal (gaming, render, oficina) y su presupuesto. Si te dan un folio (ejemplo MMH-...), diles con gusto que el equipo técnico revisará los componentes para confirmar disponibilidad.`;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      // En Gemini 2.5 tomamos el texto generado del candidato
+      const parts = data.candidates?.[0]?.content?.parts || [];
+      const textPart = parts.find(p => p.text && !p.thought) || parts[parts.length - 1];
+      if (textPart && textPart.text) {
+        return textPart.text;
+      }
+    }
+  } catch (e) {
+    console.error("Error en llamada Gemini:", e);
+  }
+  return null;
+}
+
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
 
-  // MODO DIAGNÓSTICO DETALLADO DE GOOGLE
+  // MODO TEST
   if (url.searchParams.get("test") === "1") {
     const geminiKey = context.env.GEMINI_API_KEY;
-
-    let listaModelos = null;
-    let intentoGenerar = null;
-
-    if (geminiKey) {
-      // 1. Ver qué responde Google al pedir la lista de modelos
-      try {
-        const resList = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
-        const dataList = await resList.json();
-        listaModelos = { status: resList.status, data: dataList };
-      } catch (e) {
-        listaModelos = { error: e.message };
-      }
-
-      // 2. Ver qué responde Google al intentar generar texto
-      try {
-        const resGen = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Hola" }] }]
-          })
-        });
-        const dataGen = await resGen.json();
-        intentoGenerar = { status: resGen.status, data: dataGen };
-      } catch (e) {
-        intentoGenerar = { error: e.message };
-      }
-    }
+    const respuestaIA = await llamarGemini("Hola, recomiéndame una tarjeta de video para jugar a 1080p con buen rendimiento.", geminiKey);
 
     return new Response(JSON.stringify({
-      clave_presente: !!geminiKey,
-      google_lista_modelos: listaModelos,
-      google_intento_generar: intentoGenerar
+      estado_ia: respuestaIA ? "FUNCIONANDO_AL_100" : "ERROR",
+      respuesta_generada_por_gemini: respuestaIA
     }, null, 2), {
       headers: { "Content-Type": "application/json" }
     });
@@ -73,23 +77,15 @@ export async function onRequestPost(context) {
 
     const userText = message.text.body;
 
-    let botReply = "¡Hola! Gracias por comunicarte con MMH Builds. ¿En qué computadora o componente te podemos asesorar hoy?";
+    // Consultamos a Gemini 2.5 Flash
     const geminiKey = context.env.GEMINI_API_KEY;
+    let botReply = await llamarGemini(userText, geminiKey);
 
-    if (geminiKey) {
-      try {
-        const prompt = `Eres el asesor virtual de "MMH Builds", tienda de PCs de alto rendimiento en México. Responde amable, breve y experto por WhatsApp a: "${userText}". Si piden cotización, pregunta qué componentes buscan o presupuesto.`;
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await res.json();
-        const texto = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (texto) botReply = texto;
-      } catch (e) {}
+    if (!botReply) {
+      botReply = "¡Hola! Gracias por comunicarte con MMH Builds. ¿En qué computadora o componente te podemos asesorar hoy?";
     }
 
+    // Responder por WhatsApp oficial
     const phoneId = context.env.WHATSAPP_PHONE_ID;
     const token = context.env.WHATSAPP_TOKEN;
 
