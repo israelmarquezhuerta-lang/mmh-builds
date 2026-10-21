@@ -24,3 +24,6 @@ docs/
 package.json
 pnpm-lock.yaml
 oauth-core.mjs
+
+whatsapp-inbox.mjs
+tmp/
