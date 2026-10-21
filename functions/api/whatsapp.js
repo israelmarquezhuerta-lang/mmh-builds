@@ -1,49 +1,32 @@
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
 
-  // MODO ACTIVACIÓN Y DIAGNÓSTICO
+  // MODO DIAGNÓSTICO GEMINI
   if (url.searchParams.get("test") === "1") {
-    const phoneId = context.env.WHATSAPP_PHONE_ID;
-    const token = context.env.WHATSAPP_TOKEN;
-    const wabaId = "1680700490391181"; // Tu WABA ID de Meta
+    const geminiKey = context.env.GEMINI_API_KEY;
 
-    // 1. Vincular la cuenta de WhatsApp a la app (Paso obligatorio de Meta)
-    let subscribeResult = null;
-    try {
-      const subRes = await fetch(`https://graph.facebook.com/v21.0/${wabaId}/subscribed_apps`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      subscribeResult = await subRes.json();
-    } catch (e) {
-      subscribeResult = { error: e.message };
-    }
+    let geminiStatus = null;
+    let geminiResponse = null;
 
-    // 2. Enviar mensaje de confirmación a tu cel
-    let metaResult = null;
     try {
-      const metaRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      const res = await fetch(geminiUrl, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: "522381233844",
-          text: { body: "⚡ Vinculación completada: ¡El bot ya tiene permiso para escuchar y responderte!" }
+          contents: [{ parts: [{ text: "Dame una frase corta saludando a un gamer de PC." }] }]
         })
       });
-      metaResult = await metaRes.json();
+      geminiStatus = res.status;
+      geminiResponse = await res.json();
     } catch (err) {
-      metaResult = { error: err.message };
+      geminiResponse = { error: err.message };
     }
 
     return new Response(JSON.stringify({
-      orden_vinculacion_meta: subscribeResult,
-      mensaje_enviado: metaResult
+      gemini_key_existe: !!geminiKey,
+      gemini_http_status: geminiStatus,
+      gemini_response: geminiResponse
     }, null, 2), {
       headers: { "Content-Type": "application/json" }
     });
@@ -84,8 +67,9 @@ export async function onRequestPost(context) {
 
     if (geminiKey) {
       try {
-        const prompt = `Eres el asesor virtual de "MMH Builds", tienda de PCs de alto rendimiento en México.
-Responde amable, breve y experto por WhatsApp a: "${userText}". Si piden cotización, pregunta qué uso le darán o presupuesto.`;
+        const prompt = `Eres el asesor virtual experto de "MMH Builds", tienda de PCs gamer y workstation de alto rendimiento en México.
+Responde de forma amable, entusiasta y breve por WhatsApp al cliente que escribió: "${userText}".
+Si te piden cotización, pregunta uso y presupuesto. Si dan folio, confirma que el equipo técnico revisará piezas.`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
         const geminiRes = await fetch(geminiUrl, {
