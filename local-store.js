@@ -6,7 +6,7 @@ const { calculateLoyalty } = require("./loyalty");
 const { priceOrderItems } = require("./catalog");
 const payments = require("./payments");
 
-const dataDirectory = path.join(__dirname, "data");
+const dataDirectory = process.env.MMH_DATA_DIRECTORY || path.join(__dirname, "data");
 fs.mkdirSync(dataDirectory, { recursive: true });
 const database = new DatabaseSync(path.join(dataDirectory, "mmh-local.sqlite"));
 database.exec(`
@@ -232,7 +232,7 @@ function createOrder(email, input) {
 
   const { items, subtotal, quoteRequired } = priced;
   const loyalty = getCustomerLoyalty(email);
-  const discountRate = loyalty.discountPercent;
+  const discountRate = require("./catalog").APPLY_LOYALTY_DISCOUNTS ? loyalty.discountPercent : 0;
   const discountAmount = Math.round(subtotal * discountRate) / 100;
   const order = {
     id: `MMH-${randomBytes(4).toString("hex").toUpperCase()}`,

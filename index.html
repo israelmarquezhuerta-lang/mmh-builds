@@ -10,7 +10,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/mmh-builds-icon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="./assets/mmh-builds-icon-180.png">
-  <title>MMH Builds — PCs hechas para jugar</title>
+  <title>MMH Builds · PC gaming, apps y páginas web</title>
+  <meta name="description" content="Arma tu PC gaming, crea la página web de tu negocio o solicita una app a medida. Compra y gestiona tus proyectos directamente con MMH Builds.">
   <style>
     :root {
       color-scheme: dark;
@@ -26,7 +27,6 @@
       --radius: 18px;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { margin: 0; background: var(--bg); color: var(--text); isolation: isolate; }
@@ -528,7 +528,6 @@
     @keyframes loyalty-sweep { 0%, 65%, 100% { translate: -120% 0; } 82% { translate: 120% 0; } }
     @keyframes loyalty-progress-shine { to { background-position: 180% 0; } }
     @keyframes status-pulse { 50% { opacity: .55; box-shadow: 0 0 3px #b8fa6860; } }
-
     @media (max-width: 800px) {
       .hero { padding: 40px 34px; grid-template-columns: 1fr  .75fr; }
       .hero-art { transform: scale(.82); transform-origin: center; }
@@ -623,6 +622,7 @@
       *, *:before, *:after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
+  <link rel="stylesheet" href="./storefront.css">
 </head>
 <body>
   <section class="access-gate" id="access-gate" aria-labelledby="access-title">
@@ -720,15 +720,14 @@
       </div>
     </div>
   </section>
-
+  <div class="store-announcement">TU TECNOLOGÍA. TU NEGOCIO. <span>TODO CON MMH BUILDS.</span></div>
   <header class="topbar">
     <nav class="nav shell" aria-label="Navegación principal">
       <a class="brand" href="#" aria-label="MMH Builds, inicio"><span class="brand-mark">M</span><span class="brand-name"><span>MMH</span><span>BUILDS</span></span></a>
       <div class="nav-links" id="nav-links">
-        <a href="#catalogo">Componentes</a>
-        <a href="#servicios-digitales">Servicios para negocios</a>
-        <a href="#soluciones-negocios">Soluciones</a>
-        <a href="#proceso">Proceso</a>
+        <a href="#catalogo">PC gaming</a>
+        <a href="#store-solutions">Para tu negocio</a>
+        <a href="#store-seminuevos">Seminuevos</a>
         <a href="#seguimiento" id="track-link">Mis pedidos</a>
       </div>
       <div class="nav-actions">
@@ -740,35 +739,118 @@
       </div>
     </nav>
   </header>
-
   <main class="shell">
+    <div class="store-subnav"><span><strong>Hecho para ti.</strong> Tecnología con atención personal.</span><a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer">¿Te ayudamos? WhatsApp ↗</a><span>Venta directa con MMH Builds</span></div>
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <div class="hero-brand">
-          <span class="brand-mark" aria-hidden="true">M</span>
-          <span class="hero-wordmark"><strong>MMH</strong><span>BUILDS</span></span>
-        </div>
-        <span class="eyebrow">Tecnología que va un paso adelante</span>
-        <h1 id="hero-title">El <span class="title-highlight">futuro</span> del gaming empieza aquí.</h1>
-        <p>Elige tus componentes, arma tu pedido y nosotros hacemos el resto. Ensamblada y probada por manos expertas.</p>
-        <a class="button" href="#catalogo">Explorar componentes <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="orbit"></div>
-        <div class="pc-render"><img src="assets/hero-pc.svg" alt=""></div>
-        <div class="float-tag one"><strong>Ensamble experto</strong> · incluido</div>
-        <div class="float-tag two">Entrega estimada <strong>7 días hábiles</strong></div>
-      </div>
+      <div class="hero-copy"><span class="eyebrow">MMH BUILDS · TECNOLOGÍA A TU MEDIDA</span><h1 id="hero-title">Tu siguiente nivel<br>empieza <span>aquí.</span></h1><p>Una PC para tus mejores partidas. Una web para hacer crecer tu negocio. Una app que resuelve de verdad. Tú eliges, nosotros lo hacemos posible.</p><div class="hero-actions"><a class="button" href="#catalogo">Encuentra tu próxima PC ↗</a><button class="button secondary" type="button" data-project="service-web">Impulsa tu negocio</button></div><div class="hero-points"><span>Compra con tarjeta</span><span>Atención directa</span><span>Proyectos a tu medida</span></div></div>
+      <div class="hero-art"><img id="store-hero-product" class="hero-product" alt="Tarjeta gráfica ASUS GeForce RTX 5060 Ti" fetchpriority="high"><div class="hero-product-caption"><strong>Más rendimiento. Más posibilidades.</strong>Componentes reales para tu próxima configuración.</div></div>
     </section>
+    <div class="store-trust" aria-label="Compra con MMH"><div><span class="trust-icon" aria-hidden="true">▣</span><div><strong>Pago seguro con Stripe</strong>Tarjeta de crédito o débito</div></div><div><span class="trust-icon" aria-hidden="true">✓</span><div><strong>Ensamble y pruebas</strong>Tu configuración, bien resuelta</div></div><div><span class="trust-icon" aria-hidden="true">↗</span><div><strong>Compra por pedido</strong>MMH gestiona tu solicitud</div></div><div><span class="trust-icon" aria-hidden="true">◌</span><div><strong>Hablamos contigo</strong>Atención directa por WhatsApp</div></div></div>
+    <section class="store-solutions" id="store-solutions" aria-labelledby="store-solutions-title"><div class="store-heading"><div><span class="eyebrow">ELIGE QUÉ QUIERES LOGRAR</span><h2 id="store-solutions-title">Una solución para cada idea.</h2><p>Del primer clic a tu próximo gran proyecto.</p></div></div><div class="solution-grid"><a class="solution-tile" href="#catalogo"><span class="solution-symbol" aria-hidden="true">▣</span><strong>Arma tu PC gaming</strong><p>Explora componentes y prepara la configuración que va contigo.</p><small>Ver componentes ↗</small></a><button class="solution-tile" type="button" data-project="service-web"><span class="solution-symbol" aria-hidden="true">⌘</span><strong>Tu negocio en la web</strong><p>Páginas web y tiendas que ayudan a tus clientes a encontrarte.</p><small>Cuéntanos tu idea ↗</small></button><button class="solution-tile" type="button" data-project="service-app"><span class="solution-symbol" aria-hidden="true">▯</span><strong>Una app para crecer</strong><p>Reservas, pedidos, procesos y atención en una solución a tu medida.</p><small>Empezar mi proyecto ↗</small></button><button class="solution-tile" type="button" data-project="service-used"><span class="solution-symbol" aria-hidden="true">↻</span><strong>Equipos seminuevos</strong><p>Dinos qué necesitas y te ayudamos a encontrar una opción disponible.</p><small>Solicitar opciones ↗</small></button></div></section>
 
     <section class="guest-profile-summary" id="guest-profile-summary" aria-label="Rango del visitante" hidden>
       <div><strong id="guest-profile-name">Hola</strong><p id="guest-profile-phone"></p></div>
       <span class="guest-profile-rank">Cliente explorando · sin puntos ni descuentos</span>
     </section>
+    <section class="digital-services" id="servicios-digitales" aria-labelledby="digital-title">
+      <div class="section-head">
+        <div><span class="eyebrow">Servicios digitales para negocios</span><h2 id="digital-title" style="margin-top:8px">Tu negocio también merece tecnología a medida.</h2><p>Además de armar tu PC, hacemos realidad la presencia digital de tu negocio.</p></div>
+      </div>
+      <div class="service-grid">
+        <article class="service-card">
+          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-web.svg" alt="Ilustración de diseño de página web" loading="lazy" decoding="async"></div>
+          <span class="service-tag">Presencia en línea · 7 días hábiles</span><h3>Hacemos tu página web</h3>
+          <p>Diseñamos y desarrollamos un sitio profesional, adaptable a celulares y enfocado en mostrar lo mejor de tu negocio.</p>
+          <div class="service-includes"><span>✦</span>Diseño a medida · Catálogo o servicios · Formulario de contacto</div>
+          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-web">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-web">Cotizar con detalles ↗</button></div>
+        </article>
+        <article class="service-card">
+          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-app.svg" alt="Ilustración de desarrollo de aplicación móvil" loading="lazy" decoding="async"></div>
+          <span class="service-tag">App para negocio · 15 a 20 días hábiles</span><h3>Hacemos tu app</h3>
+          <p>Creamos aplicaciones para conectar con tus clientes y facilitar la operación cotidiana de tu empresa.</p>
+          <div class="service-includes"><span>✦</span>Experiencia personalizada · Funciones según tu negocio · Diseño móvil</div>
+          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-app">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-app">Cotizar con detalles ↗</button></div>
+          <small class="pricing-note">Plazo estimado: 15 a 20 días hábiles.</small>
+        </article>
+        <article class="service-card">
+          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-extra.svg" alt="Ilustración de herramientas e integraciones digitales" loading="lazy" decoding="async"></div>
+          <span class="service-tag">Servicios extra</span><h3>Lo que tu proyecto necesite</h3>
+          <p>Complementamos tu web o app con herramientas para que tu proyecto esté listo para crecer.</p>
+          <div class="service-includes"><span>✦</span>Tiendas en línea · Reservas y citas · Mantenimiento · Integraciones</div>
+          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-extra">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-extra">Cotizar con detalles ↗</button></div>
+        </article>
+      </div>
+      <p class="service-footnote">Página web: entrega estimada en 7 días hábiles. App para negocio: 15 a 20 días hábiles. Los plazos comienzan al confirmar el alcance y recibir el material necesario. Precios y detalles del proyecto se acuerdan directamente conmigo por WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer" style="color:var(--accent-blue)">56 3493 5312 ↗</a></p>
+    </section>
+    <section class="digital-services business-solutions" id="soluciones-negocios" aria-labelledby="business-solutions-title">
+      <div class="section-head">
+        <div><span class="eyebrow">Tecnología por pedido · MMH Builds</span><h2 id="business-solutions-title" style="margin-top:8px">Soluciones para escuelas y negocios.</h2><p>Equipamos tus espacios con tecnología de marcas reconocidas y proyectos de seguridad a la medida. Cada propuesta se cotiza por WhatsApp según tu pedido.</p></div>
+      </div>
+      <div class="service-grid business-solution-grid">
+        <article class="service-card business-solution-card">
+          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Cámara de seguridad"><path d="M14 30a8 8 0 0 1 8-8h31a8 8 0 0 1 8 8v20a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8V30Z" stroke="currentColor" stroke-width="3"/><circle cx="39" cy="40" r="11" stroke="currentColor" stroke-width="3"/><circle cx="39" cy="40" r="4" fill="currentColor"/><path d="m61 34 10-6v24l-10-6M28 59l-5 8h25l-5-8" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg></div>
+          <span class="service-tag">Seguridad · por pedido</span><h3>Cámaras de seguridad</h3>
+          <p>Venta de cámaras y soluciones de videovigilancia para casas, escuelas y negocios.</p>
+          <div class="service-includes"><span>✦</span>Instalación y programación · configuración de grabación y acceso remoto según el proyecto.</div>
+          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20un%20pedido%20de%20camaras%20de%20seguridad%20para%20mi%20casa%2C%20escuela%20o%20negocio.%20Me%20interesa%20venta%2C%20instalacion%20y%20programacion.%20Ayudenme%20a%20revisar%20cantidad%2C%20ubicacion%20y%20alcance.%20Entiendo%20que%20primero%20recibire%20y%20aceptare%20la%20cotizacion%3B%20el%20pago%20se%20acuerda%20despues%20con%20MMH." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
+        </article>
+        <article class="service-card business-solution-card">
+          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Equipo de cómputo para escuelas"><path d="M11 17h42v31H11zM6 54h52M17 59h30M60 28h14v32H60z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M21 27h22M21 34h18M21 41h11M65 37h4M65 45h4M65 53h4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="67" cy="33" r="1.5" fill="currentColor"/></svg></div>
+          <span class="service-tag">Educación · por pedido</span><h3>Equipo de cómputo para escuelas</h3>
+          <p>Computadoras, laptops y periféricos para aulas, laboratorios, oficinas y áreas administrativas.</p>
+          <div class="service-includes"><span>✦</span>Propuesta según cantidad de equipos, necesidades, marcas y presupuesto de tu institución.</div>
+          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20equipo%20de%20computo%20para%20una%20escuela.%20Necesitamos%20revisar%20tipo%20y%20cantidad%20de%20equipos%2C%20marcas%2C%20uso%20y%20presupuesto.%20Por%20favor%20preparen%20una%20cotizacion%20en%20WhatsApp.%20Entiendo%20que%20el%20pago%20se%20acuerda%20despues%20de%20revisar%20y%20aceptar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
+        </article>
+        <article class="service-card business-solution-card">
+          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Equipo de cómputo para empresas"><path d="M15 68V18h50v50M8 68h64M24 30h10v10H24zM46 30h10v10H46zM24 49h10v10H24zM46 49h10v19H46z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M29 18v-6h22v6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
+          <span class="service-tag">Empresas · por pedido</span><h3>Equipo para negocios</h3>
+          <p>Soluciones de cómputo para comercios, oficinas y equipos de trabajo, configuradas de acuerdo con tu operación.</p>
+          <div class="service-includes"><span>✦</span>PCs, laptops, periféricos y orientación para equipar uno o varios puestos.</div>
+          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20equipo%20de%20computo%20para%20mi%20negocio.%20Ayudenme%20a%20definir%20tipo%20y%20cantidad%20de%20equipos%2C%20uso%20y%20presupuesto.%20Quiero%20recibir%20la%20cotizacion%20por%20WhatsApp%20y%20acordar%20el%20pago%20solo%20despues%20de%20revisar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
+        </article>
+        <article class="service-card business-solution-card">
+          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Laptop de marcas reconocidas"><path d="M19 18h42a5 5 0 0 1 5 5v31H14V23a5 5 0 0 1 5-5ZM8 60h64l-5 7H13l-5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M26 31h28M26 38h19M37 54h6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m20 12 2-4h5l2 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <span class="service-tag">Dell · Lenovo · HP · por pedido</span><h3>Laptops nuevas y seminuevas</h3>
+          <p>Consulta laptops de marcas reconocidas para escuela, trabajo o negocio, sujetas a disponibilidad.</p>
+          <div class="service-includes"><span>✦</span>Seminuevas revisadas y funcionales, con garantía de 6 meses; condiciones por modelo se detallan en la cotización.</div>
+          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20una%20laptop%20Dell%2C%20Lenovo%20o%20HP.%20Me%20interesa%20revisar%20opciones%20nuevas%20o%20seminuevas%2C%20segun%20disponibilidad.%20Para%20seminuevas%2C%20por%20favor%20confirmen%20el%20estado%2C%20funcionamiento%20y%20garantia%20de%206%20meses%20por%20escrito%20en%20la%20cotizacion.%20Acordare%20el%20pago%20despues%20de%20aceptar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
+        </article>
+      </div>
+      <p class="service-footnote">Todos estos productos y proyectos se cotizan por pedido en WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer">56 3493 5312 ↗</a>. MMH confirmará disponibilidad, modelo, alcance, garantía y precio por escrito. Revisa y acepta la cotización antes de acordar el pago; estos servicios se cotizan antes del pago.</p>
+    </section>
+    <section id="catalogo" class="product-section" aria-labelledby="catalog-title"><div class="section-head"><div><span class="eyebrow">COMPONENTES PARA TU SIGUIENTE NIVEL</span><h2 id="catalog-title" style="margin-top:8px">Encuentra la pieza que te falta.</h2><p>Fotografías reales, modelos claros y compra directa con MMH.</p></div></div><div class="store-catalog-layout"><aside class="catalog-sidebar" id="catalog-sidebar" aria-label="Filtros del catálogo"><h3>EXPLORA POR CATEGORÍA</h3><div class="filters" id="filters"><button type="button" class="filter active" data-filter="all">Todos los componentes</button><button type="button" class="filter" data-filter="gpu">Tarjetas gráficas</button><button type="button" class="filter" data-filter="cpu">Procesadores</button><button type="button" class="filter" data-filter="motherboard">Tarjetas madre</button><button type="button" class="filter" data-filter="ram">Memoria RAM</button><button type="button" class="filter" data-filter="storage">Almacenamiento SSD</button><button type="button" class="filter" data-filter="psu">Fuentes de poder</button><button type="button" class="filter" data-filter="case">Gabinetes</button><button type="button" class="filter" data-filter="monitor">Monitores</button></div><label for="store-brand">Marca</label><select id="store-brand"><option value="">Todas las marcas</option></select><label for="store-budget">Presupuesto máximo</label><input id="store-budget" type="number" min="0" step="100" inputmode="decimal" placeholder="Sin límite · MXN"><label class="stock-filter"><input id="store-available" type="checkbox" checked> Solo disponibles por pedido</label></aside><div><div class="store-search-row"><div class="store-search"><input id="store-search" type="search" aria-label="Buscar en el catálogo" placeholder="Busca por producto, marca o SKU…" autocomplete="off"></div><button type="button" id="catalog-filter-toggle" class="catalog-filter-toggle" aria-label="Mostrar filtros" aria-expanded="false">☷</button><select id="store-sort" aria-label="Ordenar productos"><option value="recommended">Orden recomendado</option><option value="price-asc">Menor precio</option><option value="price-desc">Mayor precio</option><option value="name">Nombre: A a Z</option></select></div><div class="catalog-result-line"><span id="catalog-results" aria-live="polite"></span><button id="store-clear-filters" type="button">Limpiar filtros</button></div><div class="product-grid" id="product-grid" aria-live="polite"></div><button type="button" id="catalog-load-more" class="catalog-load-more" hidden>Ver más productos</button></div></div></section>
+    <section class="store-digital-banner" id="store-seminuevos"><div><span class="eyebrow">BUENAS IDEAS. NUEVAS OPORTUNIDADES.</span><h2>Más tecnología, a tu presupuesto.</h2><p>¿Buscas una computadora seminueva para trabajar, estudiar o comenzar tu negocio? Cuéntanos tu presupuesto. MMH te confirmará opciones, estado y garantía antes de cotizar.</p></div><button class="button" type="button" data-project="service-used">Encontrar mi equipo ↗</button></section>
+    <section class="store-digital-banner"><div><span class="eyebrow">DE TU IDEA A UN NEGOCIO MÁS DIGITAL</span><h2>Tu web. Tu app. Tu siguiente paso.</h2><p>Cuéntanos qué necesita tu empresa. Guarda tu solicitud en tu cuenta y recibe una propuesta de MMH con alcance, precio y tiempos definidos.</p></div><button class="button" type="button" data-project="service-app">Empezar un proyecto ↗</button></section>
 
+    <section id="categorias" aria-labelledby="categories-title">
+      <div class="section-head"><div><span class="eyebrow">Encuentra lo que necesitas</span><h2 id="categories-title" style="margin-top:8px">Explora por categoría</h2></div></div>
+      <div class="categories">
+        <button class="category" data-category="gpu"><span class="category-icon">◈</span><strong>Tarjetas de video</strong><small>El corazón gráfico</small></button>
+        <button class="category" data-category="motherboard"><span class="category-icon">▦</span><strong>Tarjetas madre</strong><small>La base de tu setup</small></button>
+        <button class="category" data-category="cpu"><span class="category-icon">▧</span><strong>Procesadores</strong><small>Potencia para todo</small></button>
+        <button class="category" data-category="psu"><span class="category-icon">ϟ</span><strong>Fuentes de poder</strong><small>Energía confiable</small></button>
+      </div>
+    </section>
+    <section class="build-process" id="proceso" aria-labelledby="process-title">
+      <div class="section-head"><div><span class="eyebrow">De tu idea a tu setup</span><h2 id="process-title" style="margin-top:8px">Cada paso, bajo control</h2><p>Armamos, probamos y enviamos tu PC en 7 días hábiles desde el pago confirmado.</p></div></div>
+      <div class="process-track">
+        <article class="process-card"><span class="process-day">Día 1 · Solicitud</span><span class="process-icon" aria-hidden="true">◉</span><strong>Revisión de MMH</strong><small>Confirmamos disponibilidad, compatibilidad y precio antes de acordar el pago.</small></article>
+        <article class="process-card"><span class="process-day">Día 1 · Preparación</span><span class="process-icon" aria-hidden="true">▣</span><strong>Piezas reservadas</strong><small>Revisamos compatibilidad y preparamos tus componentes.</small></article>
+        <article class="process-card"><span class="process-day">Días 2–3 · Ensamble</span><span class="process-icon" aria-hidden="true">⌘</span><strong>Armado a medida</strong><small>Montaje, cableado limpio y refrigeración configurada.</small></article>
+        <article class="process-card"><span class="process-day">Día 4 · Pruebas</span><span class="process-icon" aria-hidden="true">⌁</span><strong>Pruebas de calidad</strong><small>Comprobamos temperaturas, estabilidad y rendimiento.</small></article>
+        <article class="process-card"><span class="process-day">Día 5 · Protección</span><span class="process-icon" aria-hidden="true">⬡</span><strong>Empaque seguro</strong><small>Protegemos el equipo para que viaje con cuidado.</small></article>
+        <article class="process-card"><span class="process-day">Día 6 · En camino</span><span class="process-icon" aria-hidden="true">➜</span><strong>Envío y rastreo</strong><small>Sale hacia tu domicilio con seguimiento del envío.</small></article>
+        <article class="process-card"><span class="process-day">Día 7 · Entrega</span><span class="process-icon" aria-hidden="true">✦</span><strong>Tu sueño, en casa</strong><small>Recibe tu PC lista para encender y jugar.</small></article>
+      </div>
+      <p class="pricing-note">Los precios mostrados aplican un 10% sobre precios de referencia estimados para el prototipo. Confirma las cotizaciones vigentes del mercado antes de publicar precios definitivos. La fecha de entrega es estimada y cuenta días hábiles.</p>
+    </section>
+    <section class="delivery" id="como-funciona">
+      <div class="delivery-copy"><div class="delivery-icon" aria-hidden="true">⌁</div><div><strong>Ensamble experto y pruebas, incluidos</strong><p>Monitoreamos el pedido desde la confirmación del pago hasta la entrega de tu PC.</p></div></div>
+      <span class="delivery-days">7 días hábiles</span>
+    </section>
     <section class="account-panel" id="account-panel" hidden aria-labelledby="account-title">
       <div class="section-head">
-        <div><span class="eyebrow">Portal de cliente · modo local</span><h2 id="account-title" style="margin-top:8px">Tu espacio MMH</h2><p id="account-welcome"></p></div>
+        <div><span class="eyebrow">MI ESPACIO MMH</span><h2 id="account-title" style="margin-top:8px">Tu espacio MMH</h2><p id="account-welcome"></p></div>
         <div class="account-order-actions"><button class="button secondary" id="account-logout" type="button">Cerrar sesión</button></div>
       </div>
       <section class="concierge-section" aria-labelledby="concierge-title">
@@ -847,123 +929,8 @@
       </section>
         <p class="demo-notice">El perfil y los pedidos quedan guardados. Stripe confirma los pagos con tarjeta; MMH coordina la preparación y entrega de tu pedido.</p>
     </section>
-
-    <section class="digital-services" id="servicios-digitales" aria-labelledby="digital-title">
-      <div class="section-head">
-        <div><span class="eyebrow">Servicios digitales para negocios</span><h2 id="digital-title" style="margin-top:8px">Tu negocio también merece tecnología a medida.</h2><p>Además de armar tu PC, hacemos realidad la presencia digital de tu negocio.</p></div>
-      </div>
-      <div class="service-grid">
-        <article class="service-card">
-          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-web.svg" alt="Ilustración de diseño de página web" loading="lazy" decoding="async"></div>
-          <span class="service-tag">Presencia en línea · 7 días hábiles</span><h3>Hacemos tu página web</h3>
-          <p>Diseñamos y desarrollamos un sitio profesional, adaptable a celulares y enfocado en mostrar lo mejor de tu negocio.</p>
-          <div class="service-includes"><span>✦</span>Diseño a medida · Catálogo o servicios · Formulario de contacto</div>
-          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-web">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-web">Cotizar con detalles ↗</button></div>
-        </article>
-        <article class="service-card">
-          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-app.svg" alt="Ilustración de desarrollo de aplicación móvil" loading="lazy" decoding="async"></div>
-          <span class="service-tag">App para negocio · 15 a 20 días hábiles</span><h3>Hacemos tu app</h3>
-          <p>Creamos aplicaciones para conectar con tus clientes y facilitar la operación cotidiana de tu empresa.</p>
-          <div class="service-includes"><span>✦</span>Experiencia personalizada · Funciones según tu negocio · Diseño móvil</div>
-          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-app">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-app">Cotizar con detalles ↗</button></div>
-          <small class="pricing-note">Plazo estimado: 15 a 20 días hábiles.</small>
-        </article>
-        <article class="service-card">
-          <div class="service-visual"><img class="service-catalog-image" src="assets/catalog/service-extra.svg" alt="Ilustración de herramientas e integraciones digitales" loading="lazy" decoding="async"></div>
-          <span class="service-tag">Servicios extra</span><h3>Lo que tu proyecto necesite</h3>
-          <p>Complementamos tu web o app con herramientas para que tu proyecto esté listo para crecer.</p>
-          <div class="service-includes"><span>✦</span>Tiendas en línea · Reservas y citas · Mantenimiento · Integraciones</div>
-          <div class="account-order-actions"><button class="button" type="button" data-add-service="service-extra">Agregar a mi solicitud</button><button class="button secondary" type="button" data-open-message-service="service-extra">Cotizar con detalles ↗</button></div>
-        </article>
-      </div>
-      <p class="service-footnote">Página web: entrega estimada en 7 días hábiles. App para negocio: 15 a 20 días hábiles. Los plazos comienzan al confirmar el alcance y recibir el material necesario. Precios y detalles del proyecto se acuerdan directamente conmigo por WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer" style="color:var(--accent-blue)">56 3493 5312 ↗</a></p>
-    </section>
-
-    <section class="digital-services business-solutions" id="soluciones-negocios" aria-labelledby="business-solutions-title">
-      <div class="section-head">
-        <div><span class="eyebrow">Tecnología por pedido · MMH Builds</span><h2 id="business-solutions-title" style="margin-top:8px">Soluciones para escuelas y negocios.</h2><p>Equipamos tus espacios con tecnología de marcas reconocidas y proyectos de seguridad a la medida. Cada propuesta se cotiza por WhatsApp según tu pedido.</p></div>
-      </div>
-      <div class="service-grid business-solution-grid">
-        <article class="service-card business-solution-card">
-          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Cámara de seguridad"><path d="M14 30a8 8 0 0 1 8-8h31a8 8 0 0 1 8 8v20a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8V30Z" stroke="currentColor" stroke-width="3"/><circle cx="39" cy="40" r="11" stroke="currentColor" stroke-width="3"/><circle cx="39" cy="40" r="4" fill="currentColor"/><path d="m61 34 10-6v24l-10-6M28 59l-5 8h25l-5-8" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg></div>
-          <span class="service-tag">Seguridad · por pedido</span><h3>Cámaras de seguridad</h3>
-          <p>Venta de cámaras y soluciones de videovigilancia para casas, escuelas y negocios.</p>
-          <div class="service-includes"><span>✦</span>Instalación y programación · configuración de grabación y acceso remoto según el proyecto.</div>
-          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20un%20pedido%20de%20camaras%20de%20seguridad%20para%20mi%20casa%2C%20escuela%20o%20negocio.%20Me%20interesa%20venta%2C%20instalacion%20y%20programacion.%20Ayudenme%20a%20revisar%20cantidad%2C%20ubicacion%20y%20alcance.%20Entiendo%20que%20primero%20recibire%20y%20aceptare%20la%20cotizacion%3B%20el%20pago%20se%20acuerda%20despues%20con%20MMH." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
-        </article>
-        <article class="service-card business-solution-card">
-          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Equipo de cómputo para escuelas"><path d="M11 17h42v31H11zM6 54h52M17 59h30M60 28h14v32H60z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M21 27h22M21 34h18M21 41h11M65 37h4M65 45h4M65 53h4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="67" cy="33" r="1.5" fill="currentColor"/></svg></div>
-          <span class="service-tag">Educación · por pedido</span><h3>Equipo de cómputo para escuelas</h3>
-          <p>Computadoras, laptops y periféricos para aulas, laboratorios, oficinas y áreas administrativas.</p>
-          <div class="service-includes"><span>✦</span>Propuesta según cantidad de equipos, necesidades, marcas y presupuesto de tu institución.</div>
-          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20equipo%20de%20computo%20para%20una%20escuela.%20Necesitamos%20revisar%20tipo%20y%20cantidad%20de%20equipos%2C%20marcas%2C%20uso%20y%20presupuesto.%20Por%20favor%20preparen%20una%20cotizacion%20en%20WhatsApp.%20Entiendo%20que%20el%20pago%20se%20acuerda%20despues%20de%20revisar%20y%20aceptar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
-        </article>
-        <article class="service-card business-solution-card">
-          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Equipo de cómputo para empresas"><path d="M15 68V18h50v50M8 68h64M24 30h10v10H24zM46 30h10v10H46zM24 49h10v10H24zM46 49h10v19H46z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M29 18v-6h22v6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
-          <span class="service-tag">Empresas · por pedido</span><h3>Equipo para negocios</h3>
-          <p>Soluciones de cómputo para comercios, oficinas y equipos de trabajo, configuradas de acuerdo con tu operación.</p>
-          <div class="service-includes"><span>✦</span>PCs, laptops, periféricos y orientación para equipar uno o varios puestos.</div>
-          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20equipo%20de%20computo%20para%20mi%20negocio.%20Ayudenme%20a%20definir%20tipo%20y%20cantidad%20de%20equipos%2C%20uso%20y%20presupuesto.%20Quiero%20recibir%20la%20cotizacion%20por%20WhatsApp%20y%20acordar%20el%20pago%20solo%20despues%20de%20revisar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
-        </article>
-        <article class="service-card business-solution-card">
-          <div class="service-visual"><svg class="business-solution-icon" viewBox="0 0 80 80" fill="none" role="img" aria-label="Laptop de marcas reconocidas"><path d="M19 18h42a5 5 0 0 1 5 5v31H14V23a5 5 0 0 1 5-5ZM8 60h64l-5 7H13l-5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M26 31h28M26 38h19M37 54h6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m20 12 2-4h5l2 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-          <span class="service-tag">Dell · Lenovo · HP · por pedido</span><h3>Laptops nuevas y seminuevas</h3>
-          <p>Consulta laptops de marcas reconocidas para escuela, trabajo o negocio, sujetas a disponibilidad.</p>
-          <div class="service-includes"><span>✦</span>Seminuevas revisadas y funcionales, con garantía de 6 meses; condiciones por modelo se detallan en la cotización.</div>
-          <a class="button" href="https://wa.me/525634935312?text=Hola%2C%20quiero%20cotizar%20por%20pedido%20una%20laptop%20Dell%2C%20Lenovo%20o%20HP.%20Me%20interesa%20revisar%20opciones%20nuevas%20o%20seminuevas%2C%20segun%20disponibilidad.%20Para%20seminuevas%2C%20por%20favor%20confirmen%20el%20estado%2C%20funcionamiento%20y%20garantia%20de%206%20meses%20por%20escrito%20en%20la%20cotizacion.%20Acordare%20el%20pago%20despues%20de%20aceptar%20la%20propuesta." target="_blank" rel="noopener noreferrer">Cotizar pedido por WhatsApp ↗</a>
-        </article>
-      </div>
-      <p class="service-footnote">Todos estos productos y proyectos se cotizan por pedido en WhatsApp: <a href="https://wa.me/525634935312" target="_blank" rel="noopener noreferrer">56 3493 5312 ↗</a>. MMH confirmará disponibilidad, modelo, alcance, garantía y precio por escrito. Revisa y acepta la cotización antes de acordar el pago; estos servicios se cotizan antes del pago.</p>
-    </section>
-
-    <section id="catalogo" class="product-section" aria-labelledby="catalog-title">
-      <div class="section-head">
-        <div><span class="eyebrow">Selección gaming actual</span><h2 id="catalog-title" style="margin-top:8px">Componentes destacados</h2><p>Elige las piezas para la PC que tienes en mente.</p></div>
-        <a class="text-link" href="#categorias">Ver categorías ↓</a>
-      </div>
-      <div class="filters" id="filters" aria-label="Filtrar componentes">
-        <button class="filter active" data-filter="all">Todos</button>
-        <button class="filter" data-filter="gpu">Tarjetas de video</button>
-        <button class="filter" data-filter="motherboard">Tarjetas madre</button>
-        <button class="filter" data-filter="cpu">Procesadores</button>
-        <button class="filter" data-filter="psu">Fuentes de poder</button>
-      </div>
-      <div class="product-grid" id="product-grid" aria-live="polite"></div>
-    </section>
-
-    <section id="categorias" aria-labelledby="categories-title">
-      <div class="section-head"><div><span class="eyebrow">Encuentra lo que necesitas</span><h2 id="categories-title" style="margin-top:8px">Explora por categoría</h2></div></div>
-      <div class="categories">
-        <button class="category" data-category="gpu"><span class="category-icon">◈</span><strong>Tarjetas de video</strong><small>El corazón gráfico</small></button>
-        <button class="category" data-category="motherboard"><span class="category-icon">▦</span><strong>Tarjetas madre</strong><small>La base de tu setup</small></button>
-        <button class="category" data-category="cpu"><span class="category-icon">▧</span><strong>Procesadores</strong><small>Potencia para todo</small></button>
-        <button class="category" data-category="psu"><span class="category-icon">ϟ</span><strong>Fuentes de poder</strong><small>Energía confiable</small></button>
-      </div>
-    </section>
-
-    <section class="build-process" id="proceso" aria-labelledby="process-title">
-      <div class="section-head"><div><span class="eyebrow">De tu idea a tu setup</span><h2 id="process-title" style="margin-top:8px">Cada paso, bajo control</h2><p>Armamos, probamos y enviamos tu PC en 7 días hábiles desde el pago confirmado.</p></div></div>
-      <div class="process-track">
-        <article class="process-card"><span class="process-day">Día 1 · Solicitud</span><span class="process-icon" aria-hidden="true">◉</span><strong>Revisión de MMH</strong><small>Confirmamos disponibilidad, compatibilidad y precio antes de acordar el pago.</small></article>
-        <article class="process-card"><span class="process-day">Día 1 · Preparación</span><span class="process-icon" aria-hidden="true">▣</span><strong>Piezas reservadas</strong><small>Revisamos compatibilidad y preparamos tus componentes.</small></article>
-        <article class="process-card"><span class="process-day">Días 2–3 · Ensamble</span><span class="process-icon" aria-hidden="true">⌘</span><strong>Armado a medida</strong><small>Montaje, cableado limpio y refrigeración configurada.</small></article>
-        <article class="process-card"><span class="process-day">Día 4 · Pruebas</span><span class="process-icon" aria-hidden="true">⌁</span><strong>Pruebas de calidad</strong><small>Comprobamos temperaturas, estabilidad y rendimiento.</small></article>
-        <article class="process-card"><span class="process-day">Día 5 · Protección</span><span class="process-icon" aria-hidden="true">⬡</span><strong>Empaque seguro</strong><small>Protegemos el equipo para que viaje con cuidado.</small></article>
-        <article class="process-card"><span class="process-day">Día 6 · En camino</span><span class="process-icon" aria-hidden="true">➜</span><strong>Envío y rastreo</strong><small>Sale hacia tu domicilio con seguimiento del envío.</small></article>
-        <article class="process-card"><span class="process-day">Día 7 · Entrega</span><span class="process-icon" aria-hidden="true">✦</span><strong>Tu sueño, en casa</strong><small>Recibe tu PC lista para encender y jugar.</small></article>
-      </div>
-      <p class="pricing-note">Los precios mostrados aplican un 10% sobre precios de referencia estimados para el prototipo. Confirma las cotizaciones vigentes del mercado antes de publicar precios definitivos. La fecha de entrega es estimada y cuenta días hábiles.</p>
-    </section>
-
-    <section class="delivery" id="como-funciona">
-      <div class="delivery-copy"><div class="delivery-icon" aria-hidden="true">⌁</div><div><strong>Ensamble experto y pruebas, incluidos</strong><p>Monitoreamos el pedido desde la confirmación del pago hasta la entrega de tu PC.</p></div></div>
-      <span class="delivery-days">7 días hábiles</span>
-    </section>
-
   </main>
-
   <footer class="footer"><div class="footer-inner shell"><span class="brand"><span class="brand-mark">M</span><span class="brand-name"><span>MMH</span><span>BUILDS</span></span></span><span>Componentes seleccionados. Ensamble con cuidado.</span><a class="instagram-link" href="https://www.instagram.com/computadorasmmh/" target="_blank" rel="noopener noreferrer" aria-label="Visita el Instagram de MMH Builds, @computadorasmmh"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><circle cx="17.8" cy="6.5" r="1.15" fill="currentColor"/></svg><span>@computadorasmmh</span></a><span>© 2026 MMH Builds</span></div></footer>
-
   <div class="overlay" id="cart-overlay" role="dialog" aria-modal="true" aria-labelledby="cart-title">
     <div class="dialog">
       <div class="dialog-head"><h2 id="cart-title">Tu carrito</h2><button class="close-btn" data-close="cart-overlay" aria-label="Cerrar">×</button></div>
@@ -988,7 +955,6 @@
       <button class="button full" id="checkout-start">Continuar con el pedido</button>
     </div>
   </div>
-
   <div class="overlay" id="checkout-overlay" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
     <div class="dialog">
       <div class="dialog-head"><h2 id="checkout-title">Completa tu pedido</h2><button class="close-btn" data-close="checkout-overlay" aria-label="Cerrar">×</button></div>
@@ -1006,7 +972,6 @@
       </form>
     </div>
   </div>
-
   <div class="overlay" id="payment-overlay" role="dialog" aria-modal="true" aria-labelledby="payment-title">
     <div class="dialog">
       <div class="dialog-head"><h2 id="payment-title">Pagar pedido</h2><button class="close-btn" id="payment-close" aria-label="Cerrar">×</button></div>
@@ -1025,7 +990,6 @@
       </div>
     </div>
   </div>
-
   <div class="overlay" id="order-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
     <div class="dialog">
       <div class="dialog-head"><h2 id="success-title">¡Pedido recibido!</h2><button class="close-btn" data-close="order-overlay" aria-label="Cerrar">×</button></div>
@@ -1043,12 +1007,12 @@
     </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
   <script src="./loyalty.js"></script>
   <script src="./catalog.js"></script>
+  <script src="./storefront.js"></script>
   <script>
     const { products, services, productPrice } = MmhCatalog;
-    const categoryNames = { gpu: "Tarjetas de video", motherboard: "Tarjetas madre", cpu: "Procesadores", psu: "Fuentes de poder" };
+    const categoryNames = { gpu: "Tarjetas gráficas", motherboard: "Tarjetas madre", cpu: "Procesadores", psu: "Fuentes de poder", ram: "Memoria RAM", storage: "Almacenamiento SSD", case: "Gabinetes", monitor: "Monitores" };
     const instagramPromotions = [
       { shortcode: "DNT9vwcOqbI", type: "reel" },
       { shortcode: "DNTp8DqOrBt", type: "reel" },
@@ -1099,7 +1063,6 @@
     }
     const productGrid = document.getElementById("product-grid");
     const toast = document.getElementById("toast");
-
     function renderInstagramPromotions(gridId) {
       const grid = document.getElementById(gridId);
       if (!grid) return;
@@ -1110,7 +1073,6 @@
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         link.setAttribute("aria-label", `Abrir ${type === "reel" ? "Reel" : "publicación"} ${index + 1} de MMH Builds en Instagram`);
-
         const art = document.createElement("span");
         art.className = "instagram-promo-art";
         const kind = document.createElement("span");
@@ -1136,7 +1098,6 @@
         lens.setAttribute("stroke-width", "1.7");
         icon.append(camera, lens);
         art.append(kind, icon);
-
         const copy = document.createElement("span");
         copy.className = "instagram-promo-copy";
         const title = document.createElement("strong");
@@ -1148,7 +1109,6 @@
         return link;
       }));
     }
-
     function buildGeminiContext({ beforeAccount = false, authenticatedCustomer = Boolean(currentCustomer) } = {}) {
       const catalog = products.map(product =>
         `- ${product.brand} ${product.name}: referencia mostrada ${peso(productPrice(product))}; precio vigente, compatibilidad e inventario por confirmar.`
@@ -1185,7 +1145,6 @@
         ] : [])
       ].join("\n");
     }
-
     async function requestGeminiReply(messages, options = {}) {
       const authenticatedCustomer = options.authenticatedCustomer ?? Boolean(currentCustomer);
       const response = await fetch("./api/chat", {
@@ -1209,13 +1168,11 @@
       }
       return result.reply.trim();
     }
-
     function isReadyToPurchase(message) {
       const normalized = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       return /\b(?:me lo llevo|lo compro|hagamos (?:el )?pedido|voy a comprar|ya decidi comprar)\b/.test(normalized)
         || /\b(?:quiero|quisiera|deseo|me gustaria|voy a|estoy list[oa] para)\b.{0,55}\b(?:compr\w*|adquir\w*|hacer (?:el )?pedido|realizar (?:el )?pedido|ordenar|avanzar con (?:la )?compra)\b/.test(normalized);
     }
-
     function buildWhatsAppPurchaseUrl(reply) {
       const selectedItems = [...cart].map(([id, quantity]) => {
         const item = products.find(product => product.id === id) || services.find(service => service.id === id);
@@ -1237,7 +1194,6 @@
       ].filter(Boolean).join("\n");
       return whatsappLink(details);
     }
-
     function renderAssistantText(element, text) {
       const whatsappUrl = /https:\/\/wa\.me\/525634935312(?:\?[A-Za-z0-9%=&._+-]*)?/gi;
       let lastIndex = 0;
@@ -1253,7 +1209,6 @@
       }
       element.append(document.createTextNode(text.slice(lastIndex)));
     }
-
     function renderGeminiThread(threadId, history, bubbleClass) {
       const thread = document.getElementById(threadId);
       thread.replaceChildren(...history.slice(-8).map(message => {
@@ -1284,7 +1239,6 @@
       }));
       thread.scrollTop = thread.scrollHeight;
     }
-
     async function submitGeminiChat(event, config) {
       event.preventDefault();
       const form = event.currentTarget;
@@ -1292,7 +1246,6 @@
       const button = form.querySelector('button[type="submit"]');
       const message = input.value.trim();
       if (!message || button.disabled) return;
-
       const previousHistory = config.getHistory();
       const nextHistory = [...previousHistory, { role: "user", content: message }].slice(-20);
       button.disabled = true;
@@ -1305,7 +1258,6 @@
       loading.textContent = "Gemini está revisando tu mensaje y la selección actual…";
       thread.append(loading);
       thread.scrollTop = thread.scrollHeight;
-
       try {
         const reply = await requestGeminiReply(nextHistory, { authenticatedCustomer: Boolean(currentCustomer) });
         const assistantMessage = {
@@ -1328,7 +1280,6 @@
         input.focus();
       }
     }
-
     function updateCartProgress() {
       const hasSelection = cart.size > 0;
       const progress = hasSelection ? (currentCustomer ? 76 : 48) : 0;
@@ -1341,12 +1292,10 @@
       document.getElementById("cart-progress-fill").style.width = `${progress}%`;
       document.getElementById("cart-progress").setAttribute("aria-valuenow", String(progress));
     }
-
     function showInstallHelp(message) {
       document.getElementById("install-help-message").textContent = message;
       showOverlay("install-help-overlay");
     }
-
     async function installApp() {
       if (deferredInstallPrompt) {
         const installPrompt = deferredInstallPrompt;
@@ -1357,7 +1306,6 @@
         else notify("Instalación cancelada; puedes intentarlo de nuevo cuando quieras");
         return;
       }
-
       const userAgent = navigator.userAgent;
       const appleMobile = /iPhone|iPad|iPod/i.test(userAgent)
         || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -1371,7 +1319,6 @@
       }
       showInstallHelp(message);
     }
-
     document.querySelectorAll("[data-install-app]").forEach(button => {
       button.addEventListener("click", () => {
         installApp().catch(error => {
@@ -1380,7 +1327,6 @@
         });
       });
     });
-
     window.addEventListener("beforeinstallprompt", event => {
       event.preventDefault();
       deferredInstallPrompt = event;
@@ -1399,29 +1345,7 @@
         notify("No se pudo activar la instalación; revisa que el sitio esté publicado con HTTPS.");
       });
     }
-
-    function renderProducts() {
-      const visible = activeFilter === "all" ? products : products.filter(product => product.category === activeFilter);
-      productGrid.innerHTML = visible.length ? visible.map((product, index) => {
-        const image = product.image || `assets/${product.category === "motherboard" ? "motherboard" : product.category === "cpu" ? "processor" : "power-supply"}.svg`;
-        const alt = product.imageAlt || `Ilustración original de ${product.type.toLowerCase()}: ${product.name}`;
-        const credit = product.imageCredit || "Ilustración original MMH";
-        const source = product.imageSource || "";
-        return `
-        <article class="product-card">
-          <div class="product-visual has-photo" data-movable-photo>
-            <span class="product-type">${categoryNames[product.category]}</span>
-            <img class="product-photo" src="${image}" alt="${alt}" loading="eager" decoding="async" draggable="false">
-            <span class="product-model-badge">${product.name}</span>
-            <small class="photo-credit">${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">${credit}</a>` : credit}</small>
-            <span class="photo-hint" aria-hidden="true">Mueve el cursor para girar</span>
-          </div>
-          <div class="product-info"><span class="product-brand">${product.brand}</span><h3>${product.name}</h3>
-            <div class="product-bottom"><div><span class="price">${peso(productPrice(product))}</span><small class="price-note">Incluye 10% sobre referencia</small></div><button class="add-btn" data-add="${product.id}" aria-label="Añadir ${product.name} al carrito">+</button></div>
-          </div>
-        </article>`;
-      }).join("") : '<div class="empty">No hay componentes en esta categoría.</div>';
-    }
+    function renderProducts() { MmhStorefront.renderProducts(); }
 
     function cartTotal() {
       return [...cart].reduce((total, [id, quantity]) => {
@@ -1429,11 +1353,9 @@
         return total + (item ? productPrice(item) * quantity : 0);
       }, 0);
     }
-
     function cartHasServices() {
       return [...cart.keys()].some(id => services.some(service => service.id === id));
     }
-
     function cartPricing() {
       const subtotal = cartTotal();
       const loyalty = MmhLoyalty.calculateLoyalty(currentCustomer ? orders : []);
@@ -1446,17 +1368,18 @@
           loyalty
         };
       }
-      const discountAmount = Math.round(subtotal * loyalty.discountPercent) / 100;
+      const discountPercent = MmhCatalog.APPLY_LOYALTY_DISCOUNTS ? loyalty.discountPercent : 0;
+      const discountAmount = Math.round(subtotal * discountPercent) / 100;
       return {
         subtotal,
         discountAmount,
-        discountPercent: loyalty.discountPercent,
+        discountPercent,
         total: subtotal - discountAmount,
         loyalty
       };
     }
-
     function cartPromotionText(pricing) {
+      if (!MmhCatalog.APPLY_LOYALTY_DISCOUNTS) return "Precio MMH con atención y gestión de tu pedido. No se aplican descuentos adicionales. Los servicios a medida se cotizan por separado.";
       if (!currentCustomer) {
         return document.body.classList.contains("guest")
           ? "<strong>Rango Cliente explorando:</strong> navega sin acumular puntos ni aplicar descuentos. Para acceder a MMH Rewards, inicia sesión o crea una cuenta."
@@ -1470,8 +1393,8 @@
         : `Beneficio de ${pricing.loyalty.level.name}`;
       return `<strong>${benefitName}: ${pricing.discountPercent}% (${peso(pricing.discountAmount)} estimados)</strong> sobre productos con precio. Subtotal referencial ${peso(pricing.subtotal)} · estimado con beneficio ${peso(pricing.total)}. MMH confirmará el precio y descuento final; no se acumulan beneficios. Los servicios se cotizan aparte.`;
     }
-
     function renderCart() {
+      for (const id of cart.keys()) if (!products.some(p=>p.id===id) && !services.some(s=>s.id===id)) cart.delete(id);
       if (currentCustomer) {
         try { localStorage.setItem(`mmh-cart:${currentCustomer.email}`, JSON.stringify([...cart])); } catch { /* El carrito sigue disponible durante esta sesión. */ }
       }
@@ -1486,14 +1409,13 @@
       items.innerHTML = cart.size ? [...cart].map(([id, quantity]) => {
         const item = products.find(product => product.id === id) || services.find(service => service.id === id);
         const price = item.priceOnQuote ? "Precio por cotizar con MMH Builds" : `${peso(productPrice(item))} c/u`;
-        return `<div class="cart-row"><div><strong>${item.name}</strong><small>${price}</small></div><div class="quantity"><button data-quantity="${id}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button data-quantity="${id}" data-change="1" aria-label="Añadir una unidad">+</button></div></div>`;
+        return `<div class="cart-row"><div><strong>${MmhStorefront.escape(item.name)}</strong><small>${price}</small></div><div class="quantity"><button data-quantity="${id}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button data-quantity="${id}" data-change="1" aria-label="Añadir una unidad">+</button></div></div>`;
       }).join("") : '<p class="cart-note">Tu carrito está vacío. Explora los componentes para empezar.</p>';
       document.getElementById("checkout-start").disabled = cart.size === 0;
       document.getElementById("checkout-start").style.opacity = cart.size ? "1" : ".5";
       updateCartProgress();
       renderAccountCartPreview();
     }
-
     function showOverlay(id) { document.getElementById(id).classList.add("open"); }
     function hideOverlay(id) { document.getElementById(id).classList.remove("open"); }
     function notify(message) {
@@ -1501,7 +1423,6 @@
       toast.classList.add("show");
       window.setTimeout(() => toast.classList.remove("show"), 2100);
     }
-
     function setAccountModule(moduleName) {
       document.querySelectorAll("[data-account-module]").forEach(tab => {
         const selected = tab.dataset.accountModule === moduleName;
@@ -1511,7 +1432,6 @@
       if (moduleName === "shop") renderAccountCartPreview();
       if (moduleName === "orders") renderAccount();
     }
-
     function renderAccountCartPreview() {
       const preview = document.getElementById("account-cart-preview");
       if (!preview) return;
@@ -1542,7 +1462,6 @@
         preview.append(row);
       });
     }
-
     function useCustomerCart(customer) {
       if (!accountCarts.has(customer.email)) {
         let savedCart = [];
@@ -1552,7 +1471,6 @@
       cart = accountCarts.get(customer.email);
       renderCart();
     }
-
     async function restoreLocalSession() {
       const { customer } = await localApi("/api/local/session");
       if (!customer) return;
@@ -1576,7 +1494,6 @@
         await finishPayment(returnedOrder);
       }
     }
-
     function appendAssistantMessage(text, fromCustomer = false) {
       const bubble = document.createElement("div");
       bubble.className = `assistant-bubble${fromCustomer ? " user" : ""}`;
@@ -1584,7 +1501,6 @@
       document.getElementById("assistant-thread").append(bubble);
       bubble.scrollIntoView({ block: "nearest" });
     }
-
     function setAssistantOptions(options) {
       const container = document.getElementById("assistant-options");
       container.replaceChildren();
@@ -1596,7 +1512,6 @@
         container.append(button);
       });
     }
-
     function askConciergeQuestion(mode, label, placeholder, minLength = 10) {
       assistantMode = mode;
       const form = document.getElementById("assistant-response");
@@ -1618,7 +1533,6 @@
       setAssistantOptions([]);
       details.focus();
     }
-
     function askContactConfirmation(mode) {
       assistantMode = mode;
       const form = document.getElementById("assistant-response");
@@ -1640,14 +1554,12 @@
       setAssistantOptions([]);
       phone.focus();
     }
-
     function startPcConcierge() {
       assistantPlan = {};
       document.getElementById("assistant-review").hidden = true;
       appendAssistantMessage("Perfecto. Para recomendarte con claridad necesito conocerte un poco: ¿cuál es tu presupuesto máximo exacto en pesos mexicanos? Incluye solo lo que planeas invertir en la PC.");
       askConciergeQuestion("pc-budget", "Tu presupuesto máximo exacto (MXN)", "Ejemplo: 18000", 1);
     }
-
     function getBudgetReferences(budget) {
       const groups = [
         { label: "Tarjetas de video", category: "gpu" },
@@ -1659,7 +1571,6 @@
         .slice(0, 2)
         .map(product => ({ label: group.label, product, price: productPrice(product) })));
     }
-
     function showPcPlanReview() {
       const references = getBudgetReferences(assistantPlan.budget);
       const lines = references.length
@@ -1699,7 +1610,6 @@
       );
       setAssistantOptions([]);
     }
-
     function showPurchaseTransferDetails() {
       if (!assistantPlan || !assistantPlan.contact || !currentCustomer) {
         notify("Confirma primero tu teléfono y correo");
@@ -1741,7 +1651,6 @@
       assistantMode = "purchase-transfer";
       setAssistantOptions([]);
     }
-
     function handlePcContactConfirmation(flow, phone, email) {
       const normalizedPhone = phone.replace(/[^\d+]/g, "");
       if (normalizedPhone.replace(/\D/g, "").length < 10) {
@@ -1760,13 +1669,11 @@
       assistantPlan.contact = { phone: normalizedPhone, email: normalizedEmail };
       document.getElementById("assistant-response").hidden = true;
       appendAssistantMessage(`Teléfono confirmado: ${normalizedPhone}\nCorreo confirmado: ${normalizedEmail}`, true);
-
       if (flow === "purchase-contact") {
         appendAssistantMessage("Perfecto. Prepararé una solicitud para que MMH revise y confirme el modelo, la disponibilidad y el precio antes de hablar de cualquier pago.");
         showPurchaseTransferDetails();
         return;
       }
-
       const conditionText = {
         new: "Prefiere equipo nuevo",
         used: "Solicita opciones seminuevas; disponibilidad y condición por confirmar",
@@ -1799,7 +1706,6 @@
       );
       setAssistantOptions([]);
     }
-
     function resetAssistant() {
       assistantMode = "start";
       assistantPlan = null;
@@ -1809,7 +1715,6 @@
       document.getElementById("assistant-review").hidden = true;
       setAssistantOptions([]);
     }
-
     function showAssistantReview(title, text, actions) {
       const review = document.getElementById("assistant-review");
       document.getElementById("assistant-transfer-details").hidden = true;
@@ -1833,18 +1738,15 @@
       });
       review.hidden = false;
     }
-
     function whatsappLink(message) {
       return `https://wa.me/525634935312?text=${encodeURIComponent(message)}`;
     }
-
     function cartSummaryLines() {
       return [...cart].map(([id, quantity]) => {
         const item = products.find(product => product.id === id) || services.find(service => service.id === id);
         return `${quantity} × ${item.name}${item.priceOnQuote ? " · pendiente de cotización" : ` · ${peso(productPrice(item))} c/u`}`;
       });
     }
-
     function beginServiceQuote(serviceId) {
       const service = services.find(item => item.id === serviceId);
       if (!service) {
@@ -1873,7 +1775,6 @@
       appendAssistantMessage("Cuéntame los detalles. El servicio no tiene precio fijo: MMH confirmará el alcance y el costo por WhatsApp antes de cualquier pago.");
       document.getElementById("assistant-details").focus();
     }
-
     function handleServiceQuote(details) {
       assistantQuoteDetails = details;
       const lines = cartSummaryLines();
@@ -1905,7 +1806,6 @@
       );
       setAssistantOptions([{ label: "Empezar de nuevo", action: "reset" }]);
     }
-
     function beginCartCheckout() {
       if (!cart.size) {
         appendAssistantMessage("Tu selección está vacía. Agrega productos o elige un servicio para continuar.");
@@ -1927,7 +1827,6 @@
       );
       setAssistantOptions([{ label: "Empezar de nuevo", action: "reset" }]);
     }
-
     function showPendingOrder(order) {
       if (order.quoteRequired) {
         const message = `Hola, soy ${currentCustomer.name}. Quiero continuar con la cotización de mi solicitud ${order.id}. Por favor confírmame el alcance y el precio antes de realizar cualquier pago.`;
@@ -1939,12 +1838,10 @@
       }
       showPaymentStep(order);
     }
-
     function showPaymentStep(order) {
       selectedOrder = order;
       openPayment(order);
     }
-
     function setAccountMode(showLogin) {
       const registerForm = document.getElementById("register-form");
       const loginForm = document.getElementById("login-form");
@@ -1969,7 +1866,6 @@
       document.getElementById("reset-password-error").textContent = "";
       pendingPasswordResetToken = "";
     }
-
     function showPasswordResetRequest() {
       document.getElementById("register-form").hidden = true;
       document.getElementById("login-form").hidden = true;
@@ -1985,7 +1881,6 @@
       document.getElementById("reset-request-email").value = document.getElementById("login-email").value;
       document.getElementById("reset-request-email").focus();
     }
-
     function showPasswordResetForm(token) {
       pendingPasswordResetToken = token;
       document.getElementById("register-form").hidden = true;
@@ -2000,8 +1895,8 @@
       document.getElementById("reset-password-error").textContent = "";
       document.getElementById("reset-new-password").focus();
     }
-
     function initializePasswordResetFromFragment() {
+      if (window.location.hash.startsWith("#reset-password=")) document.body.classList.add("access-visible");
       const prefix = "#reset-password=";
       if (!window.location.hash.startsWith(prefix)) return false;
       const token = window.location.hash.slice(prefix.length);
@@ -2014,7 +1909,6 @@
       showPasswordResetForm(token);
       return true;
     }
-
     function openCustomerArea() {
       if (currentCustomer) {
         renderAccount();
@@ -2025,8 +1919,8 @@
       returnToAccess();
       setAccountMode(true);
     }
-
     function enterPortal() {
+      document.body.classList.remove("access-visible");
       document.getElementById("access-gate").hidden = true;
       document.body.classList.remove("guest");
       document.body.classList.add("authenticated");
@@ -2047,8 +1941,8 @@
         document.getElementById("concierge-title").scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-
     function enterGuestStore(visitor) {
+      document.body.classList.remove("access-visible");
       currentCustomer = null;
       document.getElementById("access-gate").hidden = true;
       document.getElementById("account-panel").hidden = true;
@@ -2060,8 +1954,8 @@
       renderCart();
       window.scrollTo({ top: 0, behavior: "auto" });
     }
-
     function returnToAccess() {
+      document.body.classList.add("access-visible");
       document.body.classList.remove("authenticated", "guest");
       document.getElementById("access-gate").hidden = false;
       document.getElementById("guest-profile-summary").hidden = true;
@@ -2070,20 +1964,17 @@
       setAccountMode(true);
       window.scrollTo({ top: 0, behavior: "auto" });
     }
-
     function openGuestEntry() {
       returnToAccess();
       document.getElementById("guest-entry-section").scrollIntoView({ behavior: "smooth", block: "center" });
       document.getElementById("guest-name").focus({ preventScroll: true });
     }
-
     function fillCheckoutFromCustomer() {
       document.getElementById("customer-name").value = currentCustomer.name;
       document.getElementById("customer-email").value = currentCustomer.email;
       document.getElementById("customer-phone").value = currentCustomer.phone;
       document.getElementById("customer-address").value = currentCustomer.address;
     }
-
     function renderAccount() {
       if (!currentCustomer) return;
       const panel = document.getElementById("account-panel");
@@ -2094,7 +1985,6 @@
         document.getElementById("order-content").replaceChildren();
       }
       document.getElementById("account-welcome").textContent = `Hola, ${currentCustomer.name}. Elige un módulo para gestionar tu perfil, selección y pedidos.`;
-
       const profile = document.getElementById("account-profile");
       profile.replaceChildren();
       [["Nombre", currentCustomer.name], ["Correo electrónico", currentCustomer.email], ["Teléfono", currentCustomer.phone], ["Dirección de entrega", currentCustomer.address]].forEach(([label, value]) => {
@@ -2107,7 +1997,6 @@
         card.append(caption, detail);
         profile.append(card);
       });
-
       const loyalty = MmhLoyalty.calculateLoyalty(orders);
       const pointMessage = loyalty.points >= 100
         ? `¡Meta alcanzada! Ya tienes ${loyalty.points} puntos y desbloqueaste el 12% de Cliente distinguido.`
@@ -2155,7 +2044,6 @@
           ${MmhLoyalty.levels.map((level, index) => `<article class="loyalty-tier${index === loyalty.levelIndex ? " active" : ""}"><strong>${level.name}</strong><span>${index === 0 ? "10% inicial" : `${level.discountPercent}%`}</span><small>${tierRequirements[index]}${level.supplierPricing ? " · precios de proveedor" : ""}</small></article>`).join("")}
         </div>
         <p class="loyalty-note">Los descuentos no se acumulan; aplica el mayor nivel desbloqueado. Los rangos se calculan con el subtotal de productos pagados antes de descuentos. Los beneficios solo aplican a productos, no a servicios por cotizar. MMH confirma el precio y descuento final; las solicitudes locales aún no son compras pagadas.</p>`;
-
       const list = document.getElementById("account-orders");
       list.replaceChildren();
       const customerOrders = orders.filter(order => order.customer.email === currentCustomer.email);
@@ -2184,6 +2072,7 @@
           const product = document.createElement("li");
           product.textContent = `${item.quantity} × ${item.product.name}${item.product.priceOnQuote ? " · cotización pendiente" : ""}`;
           items.append(product);
+          if (item.product.requestDetails) { const brief=document.createElement("li"); brief.className="store-brief"; brief.textContent=item.product.requestDetails; items.append(brief); }
         });
         summary.append(id, date, total, payment, items);
         const actions = document.createElement("div");
@@ -2212,7 +2101,6 @@
         list.append(card);
       });
     }
-
     document.getElementById("account-orders").addEventListener("click", event => {
       const payButton = event.target.closest("[data-pay-order]");
       if (payButton) {
@@ -2236,7 +2124,6 @@
       section.hidden = false;
       section.scrollIntoView({ behavior: "smooth" });
     });
-
     document.getElementById("filters").addEventListener("click", event => {
       const button = event.target.closest("[data-filter]");
       if (!button) return;
@@ -2464,7 +2351,6 @@
     }
     async function sendWelcomeBotMessage(message, intent = null, voiceResponse = false) {
       if (intent) requestedAccessService = intent === "doubt" ? null : intent;
-
       const form = document.getElementById("welcome-bot-form");
       const input = document.getElementById("welcome-bot-input");
       const sendButton = form.querySelector('button[type="submit"]');
@@ -2474,7 +2360,6 @@
       welcomeBotVoiceButton.disabled = true;
       sendButton.textContent = "Enviando…";
       form.setAttribute("aria-busy", "true");
-
       try {
         const reply = ensureWelcomeAccountInvitation(
           await requestGeminiReply(nextHistory, { beforeAccount: true })
@@ -2996,11 +2881,9 @@
         openPayment(latestOrder);
       }
     });
-
     let stripeLoader = null;
     const paymentState = { order: null, stripe: null, elements: null, busy: false, paid: false };
     const paymentNetworkMessage = "No hay conexión con el sistema de pagos. Revisa tu internet e inténtalo de nuevo.";
-
     function loadStripe() {
       if (window.Stripe) return Promise.resolve(window.Stripe);
       if (!stripeLoader) {
@@ -3017,7 +2900,6 @@
       }
       return stripeLoader;
     }
-
     async function paymentApi(order, action) {
       try {
         return await localApi(`/api/local/orders/${encodeURIComponent(order.id)}/${action}`, { method: "POST" });
@@ -3025,7 +2907,6 @@
         throw error instanceof TypeError ? new Error(paymentNetworkMessage) : error;
       }
     }
-
     function paymentErrorMessage(error) {
       const declined = "Tu banco rechazó la tarjeta. Prueba con otra tarjeta o comunícate con tu banco.";
       const messages = {
@@ -3045,19 +2926,16 @@
       if (error?.type === "validation_error") return error.message;
       return messages[error?.decline_code] || messages[error?.code] || (error?.type === "card_error" ? error.message || declined : "No se pudo completar el pago. Intenta de nuevo en unos minutos.");
     }
-
     function setPaymentMessage(text, kind = "error") {
       const message = document.getElementById("payment-message");
       message.textContent = text;
       message.className = `payment-message ${kind}`;
     }
-
     function setPaymentButton(label, enabled) {
       const button = document.getElementById("payment-submit");
       button.textContent = label;
       button.disabled = !enabled;
     }
-
     async function openPayment(order) {
       Object.assign(paymentState, { order, stripe: null, elements: null, busy: false, paid: false });
       document.getElementById("payment-form").hidden = false;
@@ -3092,7 +2970,6 @@
         setPaymentButton("Reintentar", true);
       }
     }
-
     function closePayment() {
       if (paymentState.busy) return;
       hideOverlay("payment-overlay");
@@ -3101,7 +2978,6 @@
       }
       paymentState.order = null;
     }
-
     function applyUpdatedOrder(updated) {
       const index = orders.findIndex(item => item.id === updated.id);
       if (index >= 0) orders[index] = updated;
@@ -3110,7 +2986,6 @@
       renderAccount();
       renderOrderSteps();
     }
-
     async function finishPayment(order) {
       let result = null;
       for (let attempt = 0; attempt < 4; attempt += 1) {
@@ -3132,7 +3007,6 @@
       paymentState.paid = true;
       console.info("[MMH] Pago completado", order.id);
     }
-
     document.getElementById("payment-form").addEventListener("submit", async event => {
       event.preventDefault();
       const order = paymentState.order;
@@ -3202,7 +3076,6 @@
       const open = links.classList.toggle("open");
       event.currentTarget.setAttribute("aria-expanded", String(open));
     });
-
     function renderOrderSteps() {
       if (!selectedOrder) return;
       const steps = selectedOrder.quoteRequired ? [
@@ -3230,21 +3103,20 @@
           <p class="cart-note">Estado: ${selectedOrder.paymentStatus} · Pago: ${selectedOrder.quoteRequired ? "después de que MMH confirme la cotización" : selectedOrder.paymentStatus === "Pago verificado" ? "con tarjeta (Stripe)" : "pendiente"}.</p>
           ${!selectedOrder.quoteRequired && selectedOrder.paymentStatus !== "Pago verificado" ? `<button class="button full" type="button" data-pay-order>Pagar con tarjeta ${peso(selectedOrder.total)}</button>` : ""}
           ${selectedOrder.discountRate ? `<p class="cart-note">Beneficio estimado: ${selectedOrder.discountRate}% (-${peso(selectedOrder.discountAmount)}) · Subtotal de productos ${peso(selectedOrder.subtotal)} · ${peso(selectedOrder.total)} estimados con beneficio.</p>` : ""}
-          <p class="cart-note">${selectedOrder.items.map(item => `${item.quantity} × ${item.product.name}${item.product.priceOnQuote ? " · cotización pendiente" : ""}`).join("<br>")}</p>
+          <p class="cart-note">${selectedOrder.items.map(item => `${item.quantity} × ${MmhStorefront.escape(item.product.name)}${item.product.priceOnQuote ? " · cotización pendiente" : ""}${item.product.requestDetails ? `<span class="store-brief">${MmhStorefront.escape(item.product.requestDetails)}</span>` : ""}`).join("<br>")}</p>
           <div aria-label="Progreso del pedido ${progress} por ciento" style="height:4px;margin:16px 0 20px;border-radius:9px;background:#30312d"><div style="width:${progress}%;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent-blue));transition:width .5s"></div></div>
           <div class="status-steps">${steps.map(([title, note], index) => `<div class="status-step ${index < current ? "done" : ""} ${index === current ? "current" : ""}"><span class="step-dot">${index < current ? "✓" : index + 1}</span><div><strong>${title}</strong><small>${index === current ? `Estado actual · ${note}` : note}</small></div></div>`).join("")}</div>
           <p class="cart-note">MMH actualiza estas etapas conforme avanza tu pedido. Si tienes dudas, escríbenos por WhatsApp con tu folio.</p>
         </div>`;
       document.getElementById("order-steps").innerHTML = steps.map(([title, note], index) => `<div class="status-step ${index === current ? "current" : ""} ${index < current ? "done" : ""}"><span class="step-dot">${index < current ? "✓" : index + 1}</span><div><strong>${title}</strong><small>${index <= current ? (index === current ? "Estado actual · " : "Completado · ") + note : note}</small></div></div>`).join("");
     }
-
     function formatDate(date) {
       return new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" }).format(new Date(date));
     }
-
     renderProducts();
     renderInstagramPromotions("account-instagram-promo-grid");
     renderCart();
+    MmhStorefront.init();
     if (!initializePasswordResetFromFragment()) {
       restoreLocalSession().catch(error => {
         console.error("No se pudo reanudar la sesión local de MMH Builds.", error);

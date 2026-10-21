@@ -81,6 +81,10 @@ async function startOrderPayment(email, id) {
   if (order.quoteRequired || !(order.total > 0)) {
     throw Object.assign(new Error("Este pedido incluye servicios por cotizar. MMH te confirmará el precio antes del pago."), { status: 409 });
   }
+  const currentPrices = require("./catalog").priceOrderItems(order.items);
+  if (!currentPrices || Math.abs(currentPrices.subtotal - order.subtotal) > 0.005) {
+    throw Object.assign(new Error("El catálogo cambió desde que registraste el pedido. Revisa tu selección y registra un pedido actualizado."), { status: 409 });
+  }
   const savedCustomerId = localStore.getStripeCustomerId(email);
   const stripeCustomerId = await payments.ensureCustomer(process.env.STRIPE_SECRET_KEY, savedCustomerId, order.customer);
   if (!savedCustomerId) localStore.setStripeCustomerId(email, stripeCustomerId);
@@ -286,9 +290,9 @@ function serveFile(req, res, pathname) {
   }
   const pathSegments = decodedPath.replace(/\\/g, "/").split("/").filter(Boolean);
   const firstSegment = (pathSegments[0] || "").toLowerCase();
-  const privateDirectories = new Set([".git", ".vercel", "api", "data"]);
-  const privateFiles = new Set(["server-local.js", "local-store.js", "confirmar-pago-local.js", "payments.js"]);
-  if (pathSegments.some(segment => segment.startsWith(".")) || privateDirectories.has(firstSegment) || privateFiles.has(firstSegment)) {
+  const privateDirectories = new Set([".git", ".vercel", "api", "data", "work", "outputs", "scripts", "tests", "docs", "node_modules", "functions", "migrations", "apps-script"]);
+  const privateFiles = new Set(["server-local.js", "local-store.js", "confirmar-pago-local.js", "payments.js", "oauth-core.mjs", "package.json", "pnpm-lock.yaml", "wrangler.toml"]);
+  if (pathSegments.some(segment => segment.startsWith(".")) || privateDirectories.has(firstSegment) || privateFiles.has(firstSegment) || /\.txt$/i.test(decodedPath)) {
     return sendJson(res, 404, { error: "No se encontró ese archivo." });
   }
 
@@ -327,6 +331,8 @@ function serveFile(req, res, pathname) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${HOST}:${PORT}`);
+  if (url.pathname === "/api/auth/providers") return sendJson(res, 200, { google: false, microsoft: false });
+  if (url.pathname.startsWith("/api/auth/")) return sendJson(res, 503, { error: "El acceso social se configura en el despliegue HTTPS de Cloudflare." });
   if (url.pathname === "/api/chat") return runChatHandler(req, res);
   if (url.pathname === "/api/stripe/webhook" && req.method === "POST") return runStripeWebhook(req, res);
   if (url.pathname.startsWith("/api/local/")) return runLocalApi(req, res, url.pathname);

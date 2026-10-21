@@ -1,0 +1,12 @@
+{
+  "name": "mmh-builds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MMH Builds storefront and Cloudflare Pages functions",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  },
+  "dependencies": {
+    "jose": "^6.2.12"
+  }
+}

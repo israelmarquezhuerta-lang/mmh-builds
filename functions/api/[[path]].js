@@ -336,6 +336,10 @@ async function startOrderPayment(db, env, email, id) {
   if (order.quoteRequired || !(order.total > 0)) {
     throw apiError("Este pedido incluye servicios por cotizar. MMH te confirmará el precio antes del pago.", 409);
   }
+  const currentPrices = catalog.priceOrderItems(order.items);
+  if (!currentPrices || Math.abs(currentPrices.subtotal - order.subtotal) > 0.005) {
+    throw apiError("El catálogo cambió desde que registraste el pedido. Revisa tu selección y registra un pedido actualizado.", 409);
+  }
   const row = await db.prepare("SELECT stripe_customer_id FROM customers WHERE email = ?").bind(email).first();
   const stripeCustomerId = await payments.ensureCustomer(env.STRIPE_SECRET_KEY, row?.stripe_customer_id, order.customer);
   if (!row?.stripe_customer_id) {
@@ -410,7 +414,7 @@ async function createOrder(db, email, input) {
 
   const { items, subtotal, quoteRequired } = priced;
   const loyalty = await getCustomerLoyalty(db, email);
-  const discountRate = loyalty.discountPercent;
+  const discountRate = catalog.APPLY_LOYALTY_DISCOUNTS ? loyalty.discountPercent : 0;
   const discountAmount = Math.round(subtotal * discountRate) / 100;
   const order = {
     id: `MMH-${hex(crypto.getRandomValues(new Uint8Array(4))).toUpperCase()}`,
@@ -441,9 +445,30 @@ async function createOrder(db, email, input) {
 }
 
 async function handleLocal(request, env, pathname) {
+  if (!["GET", "HEAD"].includes(request.method) && request.headers.get("Origin") !== new URL(request.url).origin) return json(403, { error: "Solicitud no autorizada desde este origen." });
   const db = getDatabase(env);
   const token = getSessionToken(request);
   const customer = await findSession(db, token);
+  if (pathname.startsWith("/api/local/admin/")) {
+    const admins = String(env.MMH_ADMIN_EMAILS || "").split(",").map(email => email.trim().toLowerCase()).filter(Boolean);
+    if (!customer || !admins.includes(customer.email.toLowerCase())) return json(403, { error: "Este espacio es exclusivo de administración." });
+    if (pathname === "/api/local/admin/orders" && request.method === "GET") {
+      const rows = await db.prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT 200").all();
+      return json(200, { orders: (rows.results || []).map(orderFromRow) });
+    }
+    const stageMatch = pathname.match(/^\/api\/local\/admin\/orders\/(MMH-[A-F0-9]{8})\/stage$/);
+    if (stageMatch && request.method === "POST") {
+      const input = await readJson(request); const stage = Number(input.stage);
+      if (!Number.isInteger(stage) || stage < 0 || stage > 6) return json(400, { error: "Etapa no válida." });
+      const row = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(stageMatch[1]).first();
+      if (!row) return json(404, { error: "No se encontró el pedido." });
+      if (!row.quote_required && row.payment_status !== payments.paidStatus && stage > 0) return json(409, { error: "El pedido debe tener un pago verificado antes de preparar el equipo." });
+      await db.prepare("UPDATE orders SET stage = ? WHERE id = ?").bind(stage,stageMatch[1]).run();
+      return json(200,{ok:true});
+    }
+    return json(404,{error:"No se encontró esa operación administrativa."});
+  }
+
   if (pathname === "/api/local/password-reset/request" && request.method === "POST") {
     if (await enforceRateLimit(db, request, "password-reset-request", 5, authRateWindowMs)) {
       return json(429, { error: "Has solicitado varios enlaces. Espera unos minutos e inténtalo de nuevo." });

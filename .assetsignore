@@ -16,3 +16,11 @@ wrangler.toml
 work/
 outputs/
 *.txt
+
+node_modules/
+tests/
+scripts/
+docs/
+package.json
+pnpm-lock.yaml
+oauth-core.mjs
