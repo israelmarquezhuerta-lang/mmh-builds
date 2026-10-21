@@ -1,42 +1,49 @@
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
 
-  // MODO DIAGNÓSTICO DIRECTO DESDE NAVEGADOR
+  // MODO ACTIVACIÓN Y DIAGNÓSTICO
   if (url.searchParams.get("test") === "1") {
     const phoneId = context.env.WHATSAPP_PHONE_ID;
     const token = context.env.WHATSAPP_TOKEN;
-    const geminiKey = context.env.GEMINI_API_KEY;
+    const wabaId = "1680700490391181"; // Tu WABA ID de Meta
 
+    // 1. Vincular la cuenta de WhatsApp a la app (Paso obligatorio de Meta)
+    let subscribeResult = null;
+    try {
+      const subRes = await fetch(`https://graph.facebook.com/v21.0/${wabaId}/subscribed_apps`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      subscribeResult = await subRes.json();
+    } catch (e) {
+      subscribeResult = { error: e.message };
+    }
+
+    // 2. Enviar mensaje de confirmación a tu cel
     let metaResult = null;
-    let metaStatus = null;
-
-    if (phoneId && token) {
-      try {
-        const metaRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: "522381233844",
-            text: { body: "🤖 Prueba desde Cloudflare: ¡La conexión con MMH Builds está viva!" }
-          })
-        });
-        metaStatus = metaRes.status;
-        metaResult = await metaRes.json();
-      } catch (err) {
-        metaResult = { error_catch: err.message };
-      }
+    try {
+      const metaRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: "522381233844",
+          text: { body: "⚡ Vinculación completada: ¡El bot ya tiene permiso para escuchar y responderte!" }
+        })
+      });
+      metaResult = await metaRes.json();
+    } catch (err) {
+      metaResult = { error: err.message };
     }
 
     return new Response(JSON.stringify({
-      WHATSAPP_PHONE_ID_cargado: !!phoneId,
-      WHATSAPP_TOKEN_cargado: !!token,
-      GEMINI_API_KEY_cargado: !!geminiKey,
-      meta_http_status: metaStatus,
-      meta_response: metaResult
+      orden_vinculacion_meta: subscribeResult,
+      mensaje_enviado: metaResult
     }, null, 2), {
       headers: { "Content-Type": "application/json" }
     });
