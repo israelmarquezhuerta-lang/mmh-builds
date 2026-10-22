@@ -40,7 +40,8 @@ function jsonResponse(body, status = 200) {
 }
 
 async function verifyMetaSignature(request, rawBody, secret) {
-  if (!secret) return true;
+  // Fail closed: an unset app secret must never disable webhook verification.
+  if (!secret) return false;
   const supplied = request.headers.get("x-hub-signature-256") || "";
   if (!supplied.startsWith("sha256=")) return false;
   const key = await crypto.subtle.importKey(
@@ -77,19 +78,6 @@ function messageText(message) {
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
-
-  // MODO TEST
-  if (url.searchParams.get("test") === "1") {
-    const geminiKey = context.env.GEMINI_API_KEY;
-    const respuestaIA = await consultarGemini("Hola, recomiéndame una PC gamer con buen rendimiento.", geminiKey);
-
-    return new Response(JSON.stringify({
-      estado_ia: respuestaIA ? "FUNCIONANDO_AL_100" : "ERROR",
-      respuesta_generada_por_gemini: respuestaIA
-    }, null, 2), {
-      headers: { "Content-Type": "application/json" }
-    });
-  }
 
   // Verificación Webhook Meta
   const mode = url.searchParams.get("hub.mode");
